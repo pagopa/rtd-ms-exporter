@@ -53,7 +53,7 @@ steps:
       publishJUnitResults: true
       testResultsFiles: '**/test-results/TEST-*.xml'
       javaHomeOption: 'JDKVersion'
-      jdkVersionOption: 'default'
+      jdkVersionOption: '1.17'
       codeCoverageToolOption: 'JaCoCo'
       sonarQubeRunAnalysis: true
       sqGradlePluginVersionChoice: 'specify'
