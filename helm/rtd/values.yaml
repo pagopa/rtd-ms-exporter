@@ -1,0 +1,46 @@
+microservice-chart:
+  namespace: "rtd"
+  nameOverride: ""
+  fullnameOverride: ""
+
+  livenessProbe:
+    httpGet:
+      path: /actuator/health/liveness
+      port: 8080
+    initialDelaySeconds: 60
+    failureThreshold: 6
+    periodSeconds: 10
+
+  readinessProbe:
+    httpGet:
+      path: /actuator/health/readiness
+      port: 8080
+    initialDelaySeconds: 60
+    failureThreshold: 6
+    periodSeconds: 10
+
+  podAnnotations: { }
+
+  deployment:
+    create: true
+
+  service:
+    create: true
+    type: ClusterIP
+    ports:
+      - 8080
+
+  ingress:
+    create: false
+
+  serviceAccount:
+    create: false
+    annotations: {}
+    name: ""
+
+  podSecurityContext:
+    seccompProfile:
+      type: RuntimeDefault
+
+  securityContext:
+    allowPrivilegeEscalation: false

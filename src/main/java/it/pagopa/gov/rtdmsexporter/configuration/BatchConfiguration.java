@@ -21,6 +21,4 @@ public class BatchConfiguration {
             .setType(EmbeddedDatabaseType.H2)
             .build();
   }
-
-
 }
