@@ -46,15 +46,17 @@ steps:
   #      retryCount: '2'
 
   # options: '-B -s $(settingsxml.secureFilePath) -Dmaven.test.failure.ignore=true'
+
   - task: Gradle@3
     inputs:
       gradleWrapperFile: 'gradlew'
-      tasks: 'jacocoTestReport jacocoTestCoverageVerification'
+      tasks: 'build'
       publishJUnitResults: true
       testResultsFiles: '**/test-results/TEST-*.xml'
+      codeCoverageToolOption: 'JaCoCo'
+      codeCoverageClassFilesDirectories: 'build/classes/main/'
       javaHomeOption: 'JDKVersion'
       jdkVersionOption: '1.17'
-      codeCoverageToolOption: 'JaCoCo'
       sonarQubeRunAnalysis: true
       sqGradlePluginVersionChoice: 'specify'
       sonarQubeGradlePluginVersion: '3.5.0.2730'
