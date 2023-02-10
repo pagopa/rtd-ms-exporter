@@ -69,7 +69,6 @@ steps:
       publishJUnitResults: false
       javaHomeOption: 'JDKVersion'
       jdkVersionOption: '1.17'
-      codeCoverageToolOption: 'JaCoCo'
       sonarQubeRunAnalysis: true
       sqGradlePluginVersionChoice: 'specify'
       sonarQubeGradlePluginVersion: '3.5.0.2730'
