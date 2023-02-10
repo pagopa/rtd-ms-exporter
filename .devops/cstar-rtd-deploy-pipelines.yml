@@ -10,8 +10,8 @@ parameters:
 trigger:
   branches:
     include:
-      - develop
-      - uat
+      # - develop
+      # - uat
   #      - main
   paths:
     include:
