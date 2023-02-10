@@ -43,6 +43,8 @@ graalvmNative {
 sonarqube {
     properties {
         property "sonar.exclusions", "**/*Generated.java"
+        property "sonar.java.coveragePlugin", "jacoco"
+        property "sonar.coverage.jacoco.xmlReportPaths", "${buildDir}/reports/jacoco.xml"
     }
 }
 
