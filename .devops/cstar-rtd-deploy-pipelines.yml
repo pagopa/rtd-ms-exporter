@@ -10,9 +10,9 @@ parameters:
 trigger:
   branches:
     include:
-      # - develop
-      # - uat
-  #      - main
+      - develop
+      - uat
+      - main
   paths:
     include:
       - src/*
@@ -65,7 +65,7 @@ variables:
 
   ${{ else }}:
     environment: 'DEV'
-    componentTest: true
+    componentTest: false
     postmanEnvFile: 'rtd_dev.postman_environment.json'
     dockerRegistryServiceConnection: '$(DEV_CONTAINER_REGISTRY_SERVICE_CONN)'
     kubernetesServiceConnection: '$(DEV_KUBERNETES_SERVICE_CONN)'
@@ -89,7 +89,7 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                version=$(gradle properties -q | grep "version:" | awk '{print $2}')
+                version=$(./gradlew properties -q | grep "version:" | awk '{print $2}')
                 echo "##vso[task.setvariable variable=outputprojectversion;isOutput=true]$version"
               failOnStderr: true
 
@@ -111,6 +111,7 @@ stages:
               containerRegistry: '$(dockerRegistryServiceConnection)'
               repository: '$(imageRepository)'
               command: 'buildAndPush'
+              Dockerfile: 'Dockerfile.native'
               tags: |
                 $(Build.BuildId)
                 latest
