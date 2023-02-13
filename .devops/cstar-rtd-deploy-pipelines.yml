@@ -82,6 +82,12 @@ stages:
         pool:
           vmImage: $(vmImageNameDefault)
         steps:
+          - task: JavaToolInstaller@0
+            displayName: Install Java
+            inputs:
+              versionSpec: '17'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
           - task: Bash@3
             displayName: Get Project version
             name: getprojectversion
