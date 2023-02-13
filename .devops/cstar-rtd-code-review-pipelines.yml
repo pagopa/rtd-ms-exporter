@@ -55,7 +55,7 @@ steps:
       publishJUnitResults: true
       testResultsFiles: '**/TEST-*.xml'
       javaHomeOption: 'JDKVersion'
-      jdkVersionOption: 'default'
+      jdkVersionOption: '1.17'
       sonarQubeRunAnalysis: false
 
   - bash: xmlReportPaths=$(find "$(pwd)" -path '*jacoco.xml' | sed 's/.*/&/' | tr '\n' ','); echo "##vso[task.setvariable variable=xmlReportPaths]$xmlReportPaths"
@@ -68,7 +68,7 @@ steps:
       options: '-Dsonar.coverage.jacoco.xmlReportPaths=$(xmlReportPaths)'
       publishJUnitResults: false
       javaHomeOption: 'JDKVersion'
-      jdkVersionOption: 'default'
+      jdkVersionOption: '1.17'
       sonarQubeRunAnalysis: true
       sqGradlePluginVersionChoice: 'build' # use gradle specified version
 
