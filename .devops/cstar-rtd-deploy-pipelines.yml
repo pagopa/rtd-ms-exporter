@@ -6,6 +6,10 @@ parameters:
     displayName: 'Launch gradle and docker build'
     type: boolean
     default: true
+  - name: 'buildNative'
+    displayName: 'Deploy and build native version'
+    type: boolean
+    default: false
 
 trigger:
   branches:
@@ -117,7 +121,10 @@ stages:
               containerRegistry: '$(dockerRegistryServiceConnection)'
               repository: '$(imageRepository)'
               command: 'buildAndPush'
-              Dockerfile: 'Dockerfile.native'
+              ${{ if eq(parameters.buildNative, true) }}:
+                Dockerfile: 'Dockerfile.native'
+              ${{ else }}:
+                Dockerfile: 'Dockerfile'
               tags: |
                 $(Build.BuildId)
                 latest
