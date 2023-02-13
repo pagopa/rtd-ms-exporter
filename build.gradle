@@ -1,3 +1,5 @@
+import java.util.function.Predicate
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.0.2'
@@ -41,7 +43,7 @@ jacocoTestReport {
     dependsOn test // tests are required to run before generating the report
     reports {
         xml.required = true
-        xml.destination = file("${buildDir}/reports/jacoco.xml")
+        xml.destination file("${buildDir}/reports/jacoco.xml")
     }
 }
 
@@ -49,7 +51,28 @@ test {
     useJUnitPlatform()
 }
 
+task testWithAgent(type: Test) {
+    // GRAALVM_HOME must be set
+    useJUnitPlatform()
+    finalizedBy(metadataCopy)
+}
+
 graalvmNative {
+    // Agent useful to get working with external libraries.
+    // It allows to get additional reflection metadata, by default is run with test task
+    // the metadata must be copied to META-INF/native-image as resource
+    agent {
+        defaultMode = "standard"
+        enabled = true
+        metadataCopy {
+            inputTaskNames.add("testWithAgent")
+            outputDirectories.add("src/main/resources/META-INF/native-image")
+            mergeWithExisting = true
+        }
+        //callerFilterFiles.from("src/main/resources/native-filter/access-filter.json")
+        tasksToInstrumentPredicate = { t -> (t.name == "testWithAgent") } as Predicate<Task>
+    }
+
     binaries {
         main {
             useFatJar = true
