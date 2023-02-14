@@ -2,6 +2,9 @@ logging:
   level:
     root: INFO
 
+batch.cron_expression: ${CRON_EXPRESSION_BATCH:0 * * * * *}
+
+
 management:
   info.defaults.enabled: false
   endpoints.enabled-by-default: false
@@ -14,3 +17,7 @@ management:
     metrics:
       export:
         enabled: false
+spring:
+  batch:
+    jdbc:
+      initialize-schema: always
