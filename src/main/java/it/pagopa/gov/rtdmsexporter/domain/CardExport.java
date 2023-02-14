@@ -1,8 +1,11 @@
 package it.pagopa.gov.rtdmsexporter.domain;
 
-public interface Exporter {
+import java.util.stream.Stream;
 
-  boolean add(String key, String value);
+public interface CardExport {
+
   boolean add(String key, String... values);
   boolean remove(String key);
+
+  Stream<String> cards();
 }

@@ -1,6 +1,10 @@
 package it.pagopa.gov.rtdmsexporter.configuration;
 
 import it.pagopa.gov.rtdmsexporter.batch.ExportJobLauncher;
+import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
+import it.pagopa.gov.rtdmsexporter.domain.CardExport;
+import it.pagopa.gov.rtdmsexporter.infrastructure.LocalAcquirerFileRepository;
+import it.pagopa.gov.rtdmsexporter.infrastructure.SetCardExport;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -17,9 +21,21 @@ import javax.sql.DataSource;
 @EnableBatchProcessing
 public class BatchConfiguration {
 
+  private static final String ACQUIRER_DOWNLOAD_FILE = "/Users/andrea.petreti/Development/rtd-ms-exporter/src/main/resources/prova.csv";
+
+  @Bean
+  public CardExport cardExport() {
+    return new SetCardExport();
+  }
+
+  @Bean
+  public AcquirerFileRepository acquirerFileRepository() {
+    return new LocalAcquirerFileRepository(ACQUIRER_DOWNLOAD_FILE);
+  }
+
   @Bean
   public ExportJobLauncher exportJobLauncher(JobLauncher jobLauncher, Job exportJob) {
-    return new ExportJobLauncher(jobLauncher, exportJob);
+    return new ExportJobLauncher(jobLauncher, exportJob, ACQUIRER_DOWNLOAD_FILE, 50);
   }
 
   @Bean
