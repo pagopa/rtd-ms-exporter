@@ -1,6 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.configuration;
 
-import it.pagopa.gov.rtdmsexporter.batch.ExportJob;
+import it.pagopa.gov.rtdmsexporter.batch.ExportJobLauncher;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.JobParametersInvalidException;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
@@ -17,17 +17,18 @@ import java.util.Date;
 @Slf4j
 public class ExportJobScheduleConfiguration {
 
-  private final ExportJob exportJob;
+  private final ExportJobLauncher exportJobLauncher;
 
-  public ExportJobScheduleConfiguration(ExportJob exportJob) {
-    this.exportJob = exportJob;
+  public ExportJobScheduleConfiguration(ExportJobLauncher exportJobLauncher) {
+    this.exportJobLauncher = exportJobLauncher;
   }
+
 
   @Scheduled(cron = "${batch.cron_expression}")
   public void scheduledJob() throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
     final var start = new Date();
     log.info("Export job started at {}", start);
-    final var execution = exportJob.execute();
+    final var execution = exportJobLauncher.execute();
     log.info("Export job ends at {}", execution.getEndTime());
   }
 }

@@ -1,6 +1,7 @@
 package it.pagopa.gov.rtdmsexporter.configuration;
 
-import it.pagopa.gov.rtdmsexporter.batch.ExportJob;
+import it.pagopa.gov.rtdmsexporter.batch.ExportJobLauncher;
+import org.springframework.batch.core.Job;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
@@ -9,7 +10,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
@@ -18,8 +18,8 @@ import javax.sql.DataSource;
 public class BatchConfiguration {
 
   @Bean
-  public ExportJob exportJob(JobRepository jobRepository, JobLauncher jobLauncher, PlatformTransactionManager transactionManager) {
-    return new ExportJob(jobLauncher, jobRepository, transactionManager);
+  public ExportJobLauncher exportJobLauncher(JobLauncher jobLauncher, Job exportJob) {
+    return new ExportJobLauncher(jobLauncher, exportJob);
   }
 
   @Bean
