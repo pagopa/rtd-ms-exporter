@@ -42,8 +42,13 @@ public class KeyPaginatedMongoReader<T extends KeyPageableEntity> extends Abstra
   }
 
   private void initializeBaseQuery() {
-    baseQuery.limit(pageSize);
     baseQuery.with(Sort.by(sortDirection, keyName));
+  }
+
+  @Override
+  public void setPageSize(int pageSize) {
+    super.setPageSize(pageSize);
+    baseQuery.limit(pageSize);
   }
 
   @NotNull

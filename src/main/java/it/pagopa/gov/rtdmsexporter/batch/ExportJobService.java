@@ -6,6 +6,8 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 
+import java.util.Date;
+
 @Slf4j
 public class ExportJobService {
 
@@ -28,6 +30,7 @@ public class ExportJobService {
   public JobExecution execute() throws Exception {
     log.info("Export job started");
     final var parameters = new JobParametersBuilder()
+            .addLong("timestamp", new Date().getTime())
             .addString(TARGET_ACQUIRER_FILENAME_KEY, acquirerTargetFile)
             .addLong(READ_CHUNK_SIZE_KEY, (long) readChunkSize)
             .toJobParameters();
