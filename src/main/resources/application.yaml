@@ -3,7 +3,7 @@ logging:
     root: INFO
 
 exporter:
-  cron_expression: ${CRON_EXPRESSION_BATCH:*/1 * * * * *}
+  cronExpression: ${CRON_EXPRESSION_BATCH:-}
   readChunkSize: ${READ_CHUNK_SIZE:10000}
 
 

@@ -1,4 +1,4 @@
-package it.pagopa.gov.rtdmsexporter.configuration;
+package it.pagopa.gov.rtdmsexporter.ports;
 
 import it.pagopa.gov.rtdmsexporter.batch.ExportJobService;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ public class JobSchedulerConfig {
     this.exportJobService = exportJobService;
   }
 
-  @Scheduled(cron = "${exporter.cron_expression}")
+  @Scheduled(cron = "${exporter.cronExpression}")
   public void scheduledJob() throws Exception {
     final var start = new Date();
     log.info("Export job started at {}", start);
