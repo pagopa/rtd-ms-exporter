@@ -71,7 +71,6 @@ public class KeyPaginatedMongoReader<T> extends AbstractPaginatedDataItemReader<
     // based on your specific document structure
     try {
       Field idField = item.getClass().getDeclaredField(keyName);
-      idField.setAccessible(true);
       return idField.get(item).toString();
     } catch (Exception ex) {
       throw new RuntimeException("Failed to extract _id field from item: " + item, ex);

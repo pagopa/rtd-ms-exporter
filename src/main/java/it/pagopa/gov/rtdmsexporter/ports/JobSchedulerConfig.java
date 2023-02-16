@@ -2,10 +2,6 @@ package it.pagopa.gov.rtdmsexporter.ports;
 
 import it.pagopa.gov.rtdmsexporter.batch.ExportJobService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.JobParametersInvalidException;
-import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
-import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
-import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;

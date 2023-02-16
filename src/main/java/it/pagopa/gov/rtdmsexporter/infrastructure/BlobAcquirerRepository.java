@@ -54,7 +54,6 @@ public class BlobAcquirerRepository implements AcquirerFileRepository {
         log.info("Download successfully acquirer file");
         return fileOrEmpty.map(AcquirerFile::new);
       } catch (IOException ex) {
-        ex.printStackTrace();
         log.error("Failed to download acquirer file ", ex);
       }
       return Optional.empty();
