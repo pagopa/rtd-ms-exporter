@@ -2,8 +2,16 @@ logging:
   level:
     root: INFO
 
-batch.cron_expression: ${CRON_EXPRESSION_BATCH:0 * * * * *}
+exporter:
+  cron_expression: ${CRON_EXPRESSION_BATCH:*/1 * * * * *}
+  readChunkSize: ${READ_CHUNK_SIZE:10000}
 
+
+
+blobstorage.api:
+  baseUrl: ${API_BLOB_BASE_URL:https://api.dev.cstar.pagopa.it/storage/cstar-hashed-pans}
+  apiKey: ${API_BLOB_SUBSCRIPTION_KEY:1234567890}
+  filename: ${API_BLOB_CARD_FILENAME:hashedPans.zip}
 
 management:
   info.defaults.enabled: false
@@ -21,3 +29,7 @@ spring:
   batch:
     jdbc:
       initialize-schema: always
+  data:
+    mongodb:
+      uri: ${MONGO_DB_URI:mongodb://localhost:27017}
+      database: ${MONGODB_NAME:rtd}
