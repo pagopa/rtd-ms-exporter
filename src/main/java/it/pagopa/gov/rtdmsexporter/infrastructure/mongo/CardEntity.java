@@ -9,7 +9,7 @@ import java.util.List;
 
 @Document("enrolled_payment_instrument")
 @Getter
-public class CardEntity {
+public class CardEntity implements KeyPageableEntity {
 
   @Indexed(unique = true)
   @Field(name = "hashPan")
@@ -24,4 +24,9 @@ public class CardEntity {
 
   @Field(name = "exportConfirmed")
   private boolean exportConfirmed;
+
+  @Override
+  public String getKey() {
+    return hashPan;
+  }
 }

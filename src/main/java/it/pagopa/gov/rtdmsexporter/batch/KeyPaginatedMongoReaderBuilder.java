@@ -1,10 +1,11 @@
 package it.pagopa.gov.rtdmsexporter.batch;
 
+import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.KeyPageableEntity;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 
-public class KeyPaginatedMongoReaderBuilder<T> {
+public class KeyPaginatedMongoReaderBuilder<T extends KeyPageableEntity> {
   private MongoTemplate mongoTemplate;
   private String collectionName;
   private Query query;

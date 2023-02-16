@@ -1,5 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.batch;
 
+import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.KeyPageableEntity;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.batch.item.data.AbstractPaginatedDataItemReader;
 import org.springframework.data.domain.Sort;
@@ -8,11 +9,10 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.util.ClassUtils;
 
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Iterator;
 
-public class KeyPaginatedMongoReader<T> extends AbstractPaginatedDataItemReader<T> {
+public class KeyPaginatedMongoReader<T extends KeyPageableEntity> extends AbstractPaginatedDataItemReader<T> {
 
   private final MongoTemplate mongoTemplate;
   private final String collectionName;
@@ -58,22 +58,9 @@ public class KeyPaginatedMongoReader<T> extends AbstractPaginatedDataItemReader<
     final var items = mongoTemplate.find(query, type, collectionName);
 
     if (!items.isEmpty()) {
-      startingObjectId = extractIdFromItem(items.get(items.size() - 1));
+      startingObjectId = items.get(items.size() - 1).getKey();
       return (Iterator<T>) items.iterator();
     }
     return Collections.emptyIterator();
-  }
-
-  // TODO: remove reflection using by interface and wildcard
-  private String extractIdFromItem(T item) {
-    // Extract the _id field from the item using reflection
-    // You could also use a custom mapper to extract the id
-    // based on your specific document structure
-    try {
-      Field idField = item.getClass().getDeclaredField(keyName);
-      return idField.get(item).toString();
-    } catch (Exception ex) {
-      throw new RuntimeException("Failed to extract _id field from item: " + item, ex);
-    }
   }
 }
