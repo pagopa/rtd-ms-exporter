@@ -2,9 +2,7 @@ package it.pagopa.gov.rtdmsexporter.configuration;
 
 import it.pagopa.gov.rtdmsexporter.batch.ExportJobService;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
-import it.pagopa.gov.rtdmsexporter.domain.CardExport;
 import it.pagopa.gov.rtdmsexporter.infrastructure.BlobAcquirerRepository;
-import it.pagopa.gov.rtdmsexporter.infrastructure.SetCardExport;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -36,18 +34,12 @@ public class BatchConfiguration {
   }
 
   @Bean
-  public CardExport cardExport() {
-    return new SetCardExport();
-  }
-
-  @Bean
   public AcquirerFileRepository acquirerFileRepository(
           @Value("${blobstorage.api.baseUrl}") String baseUrl,
           @Value("${blobstorage.api.filename}") String filename,
           @Value("${blobstorage.api.apiKey}") String apiKey
   ) {
     return new BlobAcquirerRepository(
-            ACQUIRER_DOWNLOAD_FILE,
             baseUrl,
             filename,
             apiKey,
