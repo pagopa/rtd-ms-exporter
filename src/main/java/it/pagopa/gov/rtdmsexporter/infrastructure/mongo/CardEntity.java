@@ -2,6 +2,7 @@ package it.pagopa.gov.rtdmsexporter.infrastructure.mongo;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -11,6 +12,7 @@ import java.util.List;
 @Document("enrolled_payment_instrument")
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public class CardEntity implements KeyPageableEntity {
 
   @Indexed(unique = true)
@@ -25,7 +27,7 @@ public class CardEntity implements KeyPageableEntity {
   private String par;
 
   @Field(name = "exportConfirmed")
-  private boolean exportConfirmed;
+  private boolean exportConfirmed = false;
 
   @Override
   public String getKey() {
