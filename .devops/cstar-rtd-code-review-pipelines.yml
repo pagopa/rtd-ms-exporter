@@ -65,7 +65,7 @@ steps:
     inputs:
       gradleWrapperFile: 'gradlew'
       tasks: 'sonar'
-      options: '-Dsonar.coverage.jacoco.xmlReportPaths=$(xmlReportPaths)'
+      options: '-Dsonar.coverage.jacoco.xmlReportPaths=$(xmlReportPaths) -Dorg.gradle.jvmargs=-Xmx4096M'
       publishJUnitResults: false
       javaHomeOption: 'JDKVersion'
       jdkVersionOption: '1.17'
