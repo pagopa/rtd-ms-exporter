@@ -16,8 +16,8 @@ public final class ZipUtils {
 
   public static Optional<File> zipFile(File file, String zipFilePath) throws IOException {
     final var fileZip = new File(zipFilePath);
-    if (!fileZip.exists()) {
-      fileZip.createNewFile();
+    if (!fileZip.exists() && !fileZip.createNewFile()) {
+      throw new IOException("Failed to create zip file at " + zipFilePath);
     }
     try (final var in = new FileInputStream(file)) {
       try (final var out = new ZipOutputStream(new FileOutputStream(zipFilePath))) {

@@ -31,7 +31,7 @@ class ZipUtilsTest {
   @Test
   void shouldZipFileSuccessfully() throws IOException {
     final var zip = ZipUtils.zipFile(toZip, "./zipped.zip").get();
-    assertThat(zip.exists()).isTrue();
+    assertThat(zip).exists();
     try (final var in = new ZipInputStream(new FileInputStream(zip))) {
       assertThat(in.getNextEntry()).isNotNull();
     }
@@ -42,7 +42,7 @@ class ZipUtilsTest {
   void whenZipFileExistThenIsOverwritten() throws IOException {
     ZipUtils.zipFile(toZip, "./zipped.zip");
     final var zip = ZipUtils.zipFile(toZip, "./zipped.zip").get();
-    assertThat(zip.exists()).isTrue();
+    assertThat(zip).exists();
     try (final var in = new ZipInputStream(new FileInputStream(zip))) {
       assertThat(in.getNextEntry()).isNotNull();
     }
