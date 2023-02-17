@@ -1,6 +1,5 @@
 spring.data.mongodb.database: rtd
 spring.data.mongodb.port: 27017
-
 de:
   flapdoodle:
     mongodb:
