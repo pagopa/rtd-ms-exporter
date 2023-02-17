@@ -54,12 +54,15 @@ jacocoTestReport {
     }
 }
 
+sonarqube {
+    properties {
+        property "sonar.exclusions", "**/it.pagopa.gov.rtdmsexporter.ports.rest/**"
+    }
+}
+
 test {
     useJUnitPlatform()
     finalizedBy jacocoTestReport
-    jacoco {
-        excludes.add("it.pagopa.gov.rtdmsexporter.ports.rest.**")
-    }
 }
 
 task testWithAgent(type: Test) {

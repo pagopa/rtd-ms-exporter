@@ -73,7 +73,7 @@ class ExportToFileStepTest {
   }
 
   @Test
-  public void whenCardsAvailableThenWriteToFileFlatten() throws Exception {
+  void whenCardsAvailableThenWriteToFileFlatten() throws Exception {
     final var cards = HashStream.of(20)
             .map(it -> new CardEntity(it, HashStream.of(2, it).collect(Collectors.toList()), "", false))
             .collect(Collectors.toList());
