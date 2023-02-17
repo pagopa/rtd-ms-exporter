@@ -19,4 +19,10 @@ public class HashStream {
             .boxed()
             .map(it -> Hex.encodeHexString(digest.digest((it.toString() + seed).getBytes())));
   }
+
+  public static Stream<String> of(int size, String seed) {
+    return IntStream.range(0, size)
+            .boxed()
+            .map(it -> Hex.encodeHexString(digest.digest((it + seed).getBytes())));
+  }
 }

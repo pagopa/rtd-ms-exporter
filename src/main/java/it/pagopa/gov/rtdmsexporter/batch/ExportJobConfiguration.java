@@ -4,7 +4,6 @@ import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
@@ -28,6 +27,7 @@ import java.util.Optional;
 @Configuration
 public class ExportJobConfiguration {
 
+  public static final String EXPORT_TO_FILE_STEP = "exportToFileStep";
   private final JobRepository jobRepository;
   private final PlatformTransactionManager transactionManager;
 
@@ -46,11 +46,11 @@ public class ExportJobConfiguration {
   }
 
   @Bean
-  @JobScope
+  @StepScope
   public Step readMongoDBStep(
           @Value("#{jobParameters[readChunkSize]}") int readChunkSize
   ) throws Exception {
-    return new StepBuilder("readMongoDBStep", jobRepository)
+    return new StepBuilder(EXPORT_TO_FILE_STEP, jobRepository)
             .<CardEntity, List<String>>chunk(readChunkSize, transactionManager)
             .reader(mongoItemReader(null, readChunkSize))
             .processor(cardFlatProcessor())
@@ -80,7 +80,9 @@ public class ExportJobConfiguration {
   @Bean
   public ItemProcessor<CardEntity, List<String>> cardFlatProcessor() {
     return item -> {
-      final var hashes = Optional.ofNullable(item.getHashPanChildren()).orElse(new ArrayList<>());
+      final var hashes = Optional.ofNullable(item.getHashPanChildren())
+              .map(ArrayList::new)
+              .orElse(new ArrayList<>());
       hashes.add(item.getHashPan());
       return hashes;
     };
