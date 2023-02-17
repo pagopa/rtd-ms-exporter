@@ -1,7 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.batch;
 
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.KeyPageableEntity;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.batch.item.data.AbstractPaginatedDataItemReader;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -42,7 +41,6 @@ public class KeyPaginatedMongoReader<T extends KeyPageableEntity> extends Abstra
     setName(ClassUtils.getShortName(KeyPaginatedMongoReader.class));
   }
 
-  @NotNull
   @Override
   protected Iterator<T> doPageRead() {
     final var query = Query.of(baseQuery);
