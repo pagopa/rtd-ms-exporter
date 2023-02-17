@@ -21,7 +21,7 @@ public class KeyPaginatedMongoReader<T extends KeyPageableEntity> extends Abstra
   private final String keyName;
   private final Sort.Direction sortDirection;
 
-  private String startingObjectId;
+  private String startingNextKey;
   private boolean hasNextPage;
 
   public KeyPaginatedMongoReader(
@@ -40,33 +40,24 @@ public class KeyPaginatedMongoReader<T extends KeyPageableEntity> extends Abstra
     this.sortDirection = sortDirection;
     this.hasNextPage = true;
     setName(ClassUtils.getShortName(KeyPaginatedMongoReader.class));
-    initializeBaseQuery();
-  }
-
-  private void initializeBaseQuery() {
-    baseQuery.with(Sort.by(sortDirection, keyName));
-  }
-
-  @Override
-  public void setPageSize(int pageSize) {
-    super.setPageSize(pageSize);
-    baseQuery.limit(pageSize);
   }
 
   @NotNull
   @Override
   protected Iterator<T> doPageRead() {
     final var query = Query.of(baseQuery);
+    query.with(Sort.by(sortDirection, keyName));
+    query.limit(pageSize);
     // if is the 2nd page and startingKey is not null then paginate by that
     if (hasNextPage) {
-      if (page > 0 && startingObjectId != null) {
-        query.addCriteria(Criteria.where(keyName).gt(startingObjectId));
+      if (page > 0 && startingNextKey != null) {
+        query.addCriteria(Criteria.where(keyName).gt(startingNextKey));
       }
 
       final var items = mongoTemplate.find(query, type, collectionName);
 
       if (!items.isEmpty()) {
-        startingObjectId = items.get(items.size() - 1).getKey();
+        startingNextKey = items.get(items.size() - 1).getKey();
         hasNextPage = items.size() == pageSize;
         return (Iterator<T>) items.iterator();
       }

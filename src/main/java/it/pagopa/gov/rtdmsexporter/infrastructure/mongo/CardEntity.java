@@ -1,5 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.infrastructure.mongo;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -9,6 +10,7 @@ import java.util.List;
 
 @Document("enrolled_payment_instrument")
 @Getter
+@AllArgsConstructor
 public class CardEntity implements KeyPageableEntity {
 
   @Indexed(unique = true)
