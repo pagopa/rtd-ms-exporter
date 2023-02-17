@@ -3,18 +3,26 @@ package it.pagopa.gov.rtdmsexporter.batch;
 import com.github.tonivade.purefun.type.Try;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import it.pagopa.gov.rtdmsexporter.utils.HashStream;
+import net.bytebuddy.utility.dispatcher.JavaDispatcher;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Collections;
 import java.util.Objects;
@@ -26,9 +34,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+@Testcontainers
 @DataMongoTest
 @ExtendWith(SpringExtension.class)
 class KeyPaginatedMongoReaderTest {
+
+  @Container
+  public static final MongoDBContainer mongoContainer = new MongoDBContainer("mongo:4.4.4");
+
+  @DynamicPropertySource
+  static void setProperties(DynamicPropertyRegistry registry) {
+    registry.add("spring.data.mongodb.uri", mongoContainer::getReplicaSetUrl);
+  }
 
   @Autowired
   private MongoTemplate mongoTemplate;
@@ -38,6 +55,7 @@ class KeyPaginatedMongoReaderTest {
 
   @BeforeEach
   void setup() {
+
     mongoTemplate.indexOps("cards")
             .ensureIndex(new Index().on("hashPan", Sort.Direction.ASC).unique());
     mongoTemplateSpy = Mockito.spy(mongoTemplate);
