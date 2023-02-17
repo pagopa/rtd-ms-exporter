@@ -31,7 +31,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'com.h2database:h2:2.1.214'
-    implementation 'org.mapdb:mapdb:3.0.9'
     implementation 'org.apache.httpcomponents:httpclient:4.5.14'
     implementation 'com.github.tonivade:purefun-core:4.0'
 
