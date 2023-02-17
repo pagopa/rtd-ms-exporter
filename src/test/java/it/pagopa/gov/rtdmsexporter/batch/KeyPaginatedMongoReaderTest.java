@@ -3,16 +3,13 @@ package it.pagopa.gov.rtdmsexporter.batch;
 import com.github.tonivade.purefun.type.Try;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import it.pagopa.gov.rtdmsexporter.utils.HashStream;
-import net.bytebuddy.utility.dispatcher.JavaDispatcher;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
@@ -55,7 +52,6 @@ class KeyPaginatedMongoReaderTest {
 
   @BeforeEach
   void setup() {
-
     mongoTemplate.indexOps("cards")
             .ensureIndex(new Index().on("hashPan", Sort.Direction.ASC).unique());
     mongoTemplateSpy = Mockito.spy(mongoTemplate);
@@ -88,6 +84,20 @@ class KeyPaginatedMongoReaderTest {
             .collect(Collectors.toSet());
 
     assertThat(reads).hasSize(25);
+  }
+
+  @Test
+  void whenItemsAreSameOfPageSizeThenSecondReadMustBeEmpty() {
+    HashStream.of(10)
+            .map(it -> new CardEntity(it, Collections.emptyList(), "", false))
+            .forEach(it -> mongoTemplate.save(it, "cards"));
+
+    final var reads = Stream.generate(() -> Try.of(paginatedMongoReader::read))
+            .map(Try::getOrElseNull)
+            .takeWhile(Objects::nonNull)
+            .collect(Collectors.toSet());
+
+    assertThat(reads).hasSize(10);
   }
 
   @Test

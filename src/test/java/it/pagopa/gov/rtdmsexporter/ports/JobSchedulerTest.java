@@ -24,7 +24,7 @@ class JobSchedulerTest {
   private ExportJobService exportJobService;
 
   @Test
-  void aa() throws Exception {
+  void shouldRunJobRepeatedly() throws Exception {
     when(exportJobService.execute()).thenReturn(MetaDataInstanceFactory.createJobExecution());
     await().atMost(Duration.ofSeconds(10))
             .untilAsserted(() -> verify(exportJobService, atLeast(2)).execute());
