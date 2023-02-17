@@ -18,10 +18,9 @@ public class AppConfiguration {
   @Bean
   public ExportJobService exportJobService(
           JobLauncher jobLauncher,
-          Job jobExport,
-          @Value("${exporter.readChunkSize}") int readChunkSize
+          Job jobExport
   ) {
-    return new ExportJobService(jobLauncher, jobExport, ACQUIRER_DOWNLOAD_FILE, readChunkSize);
+    return new ExportJobService(jobLauncher, jobExport, ACQUIRER_DOWNLOAD_FILE);
   }
 
   @Bean

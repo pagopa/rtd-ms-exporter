@@ -30,10 +30,16 @@ public class ExportJobConfiguration {
   public static final String EXPORT_TO_FILE_STEP = "exportToFileStep";
   private final JobRepository jobRepository;
   private final PlatformTransactionManager transactionManager;
+  private final int readChunkSize;
 
-  public ExportJobConfiguration(JobRepository jobRepository, PlatformTransactionManager transactionManager) {
+  public ExportJobConfiguration(
+          JobRepository jobRepository,
+          PlatformTransactionManager transactionManager,
+          @Value("${exporter.readChunkSize}") int readChunkSize
+  ) {
     this.jobRepository = jobRepository;
     this.transactionManager = transactionManager;
+    this.readChunkSize = readChunkSize;
   }
 
   @Bean
@@ -46,13 +52,10 @@ public class ExportJobConfiguration {
   }
 
   @Bean
-  @StepScope
-  public Step readMongoDBStep(
-          @Value("#{jobParameters[readChunkSize]}") int readChunkSize
-  ) throws Exception {
+  public Step readMongoDBStep() throws Exception {
     return new StepBuilder(EXPORT_TO_FILE_STEP, jobRepository)
             .<CardEntity, List<String>>chunk(readChunkSize, transactionManager)
-            .reader(mongoItemReader(null, readChunkSize))
+            .reader(mongoItemReader(null))
             .processor(cardFlatProcessor())
             .writer(acquirerFileWriter(null))
             .build();
@@ -60,10 +63,7 @@ public class ExportJobConfiguration {
 
   @Bean
   @StepScope
-  public KeyPaginatedMongoReader<CardEntity> mongoItemReader(
-          MongoTemplate mongoTemplate,
-          @Value("#{jobParameters[readChunkSize]}") int readChunkSize
-  ) {
+  public KeyPaginatedMongoReader<CardEntity> mongoItemReader(MongoTemplate mongoTemplate) {
     final var query = new Query();
     query.fields().include("hashPan", "hashPanChildren", "par", "exportConfirmed");
     return new KeyPaginatedMongoReaderBuilder<CardEntity>()

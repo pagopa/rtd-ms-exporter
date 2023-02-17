@@ -18,7 +18,6 @@ class ExportJobServiceTest {
   private ExportJobService exportJobService;
 
   private static final String TEST_ACQUIRER_FILE = "file.csv";
-  private static final int TEST_CHUNK_SIZE = 20;
 
   @BeforeEach
   void setup() {
@@ -26,8 +25,7 @@ class ExportJobServiceTest {
     exportJobService = new ExportJobService(
             jobLauncher,
             mock(Job.class),
-            TEST_ACQUIRER_FILE,
-            TEST_CHUNK_SIZE
+            TEST_ACQUIRER_FILE
     );
   }
 
@@ -40,8 +38,7 @@ class ExportJobServiceTest {
 
     verify(jobLauncher).run(any(), parametersCaptor.capture());
     assertThat(parametersCaptor.getValue())
-            .satisfies(it -> assertThat(it.getString("acquirerFilename")).isEqualTo(TEST_ACQUIRER_FILE))
-            .satisfies(it -> assertThat(it.getLong("readChunkSize")).isEqualTo(TEST_CHUNK_SIZE));
+            .satisfies(it -> assertThat(it.getString("acquirerFilename")).isEqualTo(TEST_ACQUIRER_FILE));
   }
 
 }
