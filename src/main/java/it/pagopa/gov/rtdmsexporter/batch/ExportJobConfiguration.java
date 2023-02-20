@@ -54,11 +54,12 @@ public class ExportJobConfiguration {
 
   @Bean
   Job exportJob(Step readMongoDBStep, Step zipStep, Step uploadStep) {
-    return new JobBuilder("exportJob", jobRepository)
+    return new JobBuilder(JOB_NAME, jobRepository)
             .preventRestart()
             .incrementer(new RunIdIncrementer())
             .start(readMongoDBStep)
-            .next(zipStep)
+            .on(ExitStatus.COMPLETED.getExitCode())
+            .to(zipStep)
             .on(ExitStatus.COMPLETED.getExitCode())
             .to(uploadStep)
             .build()

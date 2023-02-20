@@ -47,7 +47,7 @@ public class AppConfiguration {
           CloseableHttpClient httpClient
   ) {
     return new BlobAcquirerRepository(
-            new BlobConfig(baseUrl, apiKey, containerName),
+            BlobConfig.of(baseUrl, apiKey, containerName),
             filename,
             httpClient
     );
