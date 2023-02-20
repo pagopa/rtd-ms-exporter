@@ -32,9 +32,9 @@ public class BlobAcquirerRepository implements AcquirerFileRepository {
   @Override
   public boolean save(AcquirerFile file) {
     final var url = UriComponentsBuilder.fromHttpUrl(blobConfig.baseUrl())
-            .path(blobConfig.containerName())
-            .path(remoteFilename)
+            .pathSegment(blobConfig.containerName(), remoteFilename)
             .build();
+    log.info("Making upload to: {}", url.toUriString());
     final var toUpload = new FileEntity(file.file(), ContentType.create("application/octet-stream"));
     final var putFile = new HttpPut(url.toUriString());
     putFile.setHeader(new BasicHeader(API_KEY_HEADER, blobConfig.apiKey()));
