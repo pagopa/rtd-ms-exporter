@@ -10,6 +10,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 
@@ -18,27 +19,25 @@ public class BlobAcquirerRepository implements AcquirerFileRepository {
 
   private static final String API_KEY_HEADER = "Ocp-Apim-Subscription-Key";
 
-  private final String baseUrl;
+  private final BlobConfig blobConfig;
   private final String remoteFilename;
-  private final String apiKey;
   private final CloseableHttpClient httpClient;
 
-  public BlobAcquirerRepository(String baseUrl, String remoteFilename, String apiKey, CloseableHttpClient httpClient) {
-    this.baseUrl = baseUrl;
+  public BlobAcquirerRepository(BlobConfig blobConfig, String remoteFilename, CloseableHttpClient httpClient) {
+    this.blobConfig = blobConfig;
     this.remoteFilename = remoteFilename;
-    this.apiKey = apiKey;
     this.httpClient = httpClient;
   }
 
   @Override
   public boolean save(AcquirerFile file) {
-    final var url = baseUrl.endsWith("/") ? baseUrl + remoteFilename : baseUrl + "/" + remoteFilename;
-    final var toUpload = new FileEntity(
-            file.file(),
-            ContentType.create("application/octet-stream")
-    );
-    final var putFile = new HttpPut(url);
-    putFile.setHeader(new BasicHeader(API_KEY_HEADER, apiKey));
+    final var url = UriComponentsBuilder.fromHttpUrl(blobConfig.baseUrl())
+            .path(blobConfig.containerName())
+            .path(remoteFilename)
+            .build();
+    final var toUpload = new FileEntity(file.file(), ContentType.create("application/octet-stream"));
+    final var putFile = new HttpPut(url.toUriString());
+    putFile.setHeader(new BasicHeader(API_KEY_HEADER, blobConfig.apiKey()));
     putFile.setHeader(new BasicHeader("x-ms-blob-type", "BlockBlob"));
     putFile.setHeader(new BasicHeader("x-ms-version", "2021-04-10"));
     putFile.setEntity(toUpload);

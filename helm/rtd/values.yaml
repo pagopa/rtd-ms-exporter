@@ -48,6 +48,7 @@ microservice-chart:
   envSecret:
     MONGODB_CONNECTION_URI: mongo-db-connection-uri
     APPLICATIONINSIGHTS_CONNECTION_STRING: appinsights-instrumentation-key
+    API_BLOB_SUBSCRIPTION_KEY: rtd-internal-api-product-subscription-key
 
   envConfigMapExternals:
     rtd-exporter:
@@ -58,3 +59,5 @@ microservice-chart:
       MONGODB_NAME: MONGODB_NAME
       CRON_EXPRESSION_BATCH: CRON_EXPRESSION_BATCH
       READ_CHUNK_SIZE: READ_CHUNK_SIZE
+      API_BLOB_BASE_URL: API_BLOB_BASE_URL
+      API_BLOB_CARD_FILENAME: API_BLOB_CARD_FILENAME

@@ -8,6 +8,7 @@ exporter:
 
 blobstorage.api:
   baseUrl: ${API_BLOB_BASE_URL:https://api.dev.cstar.pagopa.it/storage/cstar-hashed-pans}
+  containerName: ${API_BLOB_CONTAINER_NAME:cstar-hashed-pans}
   apiKey: ${API_BLOB_SUBSCRIPTION_KEY:1234567890}
   filename: ${API_BLOB_CARD_FILENAME:hashedPans.zip}
 
