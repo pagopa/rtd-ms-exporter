@@ -1,11 +1,11 @@
-FROM eclipse-temurin:17-jdk-alpine as build
+FROM amazoncorretto:17-alpine3.17 as build
 
 WORKDIR /build
 COPY . .
 
 RUN ./gradlew bootJar
 
-FROM eclipse-temurin:17-jdk-alpine as runtime
+FROM amazoncorretto:17-alpine3.17 as runtime
 
 WORKDIR /app
 COPY --from=build /build/build/libs/*.jar /app/app.jar
