@@ -33,6 +33,7 @@ import java.util.Optional;
 public class ExportJobConfiguration {
 
   private static final String COLLECTION_NAME = "enrolled_payment_instrument";
+  public static final String JOB_NAME = "exportJob";
   public static final String EXPORT_TO_FILE_STEP = "exportToFileStep";
   public static final String ZIP_STEP = "zipStep";
   public static final String UPLOAD_STEP = "uploadStep";

@@ -1,6 +1,5 @@
 package it.pagopa.gov.rtdmsexporter.batch;
 
-import it.pagopa.gov.rtdmsexporter.batch.ExportJobConfiguration;
 import it.pagopa.gov.rtdmsexporter.configuration.BatchConfiguration;
 import it.pagopa.gov.rtdmsexporter.infrastructure.ZipUtils;
 import it.pagopa.gov.rtdmsexporter.utils.FileUtils;

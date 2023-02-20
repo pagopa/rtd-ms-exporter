@@ -1,13 +1,13 @@
 package it.pagopa.gov.rtdmsexporter.batch;
 
 import it.pagopa.gov.rtdmsexporter.configuration.BatchConfiguration;
+import it.pagopa.gov.rtdmsexporter.configuration.MockMongoConfiguration;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import it.pagopa.gov.rtdmsexporter.utils.HashStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -15,8 +15,6 @@ import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.batch.test.JobRepositoryTestUtils;
 import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -26,7 +24,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
-import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
@@ -40,14 +38,9 @@ import static org.mockito.Mockito.when;
 @SpringBatchTest
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
-@Import(ExportToFileStepTest.MockMongoConfiguration.class)
-@ContextConfiguration(classes = {
-        ExportJobConfiguration.class,
-        BatchConfiguration.class
-})
-@TestExecutionListeners({
-        DependencyInjectionTestExecutionListener.class
-})
+@Import(MockMongoConfiguration.class)
+@ContextConfiguration(classes = { ExportJobConfiguration.class, BatchConfiguration.class })
+@TestExecutionListeners({ DependencyInjectionTestExecutionListener.class })
 @TestPropertySource(properties = "exporter.readChunkSize=10")
 class ExportToFileStepTest {
 
@@ -67,9 +60,9 @@ class ExportToFileStepTest {
   }
 
   @AfterEach
-  public void cleanUp() {
+  public void cleanUp() throws IOException {
     jobRepositoryTestUtils.removeJobExecutions();
-    new File(TEST_ACQUIRER_FILE).delete();
+    Files.deleteIfExists(Path.of(TEST_ACQUIRER_FILE));
   }
 
   @Test
@@ -93,13 +86,5 @@ class ExportToFileStepTest {
                     .flatMap(it -> Stream.concat(Stream.of(it.getHashPan()), it.getHashPanChildren().stream()))
                     .collect(Collectors.toList())
     );
-  }
-
-  @TestConfiguration
-  static class MockMongoConfiguration {
-    @Bean
-    MongoTemplate mongoTemplate() {
-      return Mockito.mock(MongoTemplate.class);
-    }
   }
 }
