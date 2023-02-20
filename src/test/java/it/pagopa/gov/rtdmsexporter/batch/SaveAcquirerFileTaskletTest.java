@@ -59,6 +59,7 @@ class SaveAcquirerFileTaskletTest {
   @AfterEach
   void cleanup(@Autowired JobRepositoryTestUtils jobRepositoryTestUtils) throws IOException {
     jobRepositoryTestUtils.removeJobExecutions();
+    reset(acquirerFileRepository);
     Files.deleteIfExists(Path.of(TEST_FILE_TO_UPLOAD));
   }
 

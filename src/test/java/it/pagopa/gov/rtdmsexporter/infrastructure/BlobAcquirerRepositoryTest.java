@@ -30,9 +30,8 @@ class BlobAcquirerRepositoryTest {
   void setup() {
     client = mock(CloseableHttpClient.class);
     blobAcquirerRepository = new BlobAcquirerRepository(
-            "http://url:8080",
+            new BlobConfig("http://url:8080", "1234", "hash-container"),
             "hashPan.zip",
-            "apiKey",
             client
     );
   }
