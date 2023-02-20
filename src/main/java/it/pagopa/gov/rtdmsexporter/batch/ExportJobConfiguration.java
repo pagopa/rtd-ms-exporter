@@ -32,6 +32,7 @@ import java.util.Optional;
 @Configuration
 public class ExportJobConfiguration {
 
+  private static final String COLLECTION_NAME = "enrolled_payment_instrument";
   public static final String EXPORT_TO_FILE_STEP = "exportToFileStep";
   public static final String ZIP_STEP = "zipStep";
   public static final String UPLOAD_STEP = "uploadStep";
@@ -116,7 +117,7 @@ public class ExportJobConfiguration {
     query.fields().include("hashPan", "hashPanChildren", "par", "exportConfirmed");
     return new KeyPaginatedMongoReaderBuilder<CardEntity>()
             .setMongoTemplate(mongoTemplate)
-            .setCollectionName("pippi")
+            .setCollectionName(COLLECTION_NAME)
             .setType(CardEntity.class)
             .setKeyName("hashPan")
             .setSortDirection(Sort.Direction.ASC)
