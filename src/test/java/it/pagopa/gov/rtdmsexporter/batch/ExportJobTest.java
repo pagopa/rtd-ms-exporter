@@ -46,7 +46,7 @@ import static org.mockito.Mockito.*;
 @Import(ExportJobTest.Config.class)
 @ContextConfiguration(classes = { MockMongoConfiguration.class, ExportJobConfiguration.class, BatchConfiguration.class })
 @TestExecutionListeners({ DependencyInjectionTestExecutionListener.class })
-public class ExportJobTest {
+class ExportJobTest {
 
   private static final String TEST_ACQUIRER_FILE = "output.csv";
   private static final String TEST_ZIP_ACQUIRER_FILE = "output.zip";
