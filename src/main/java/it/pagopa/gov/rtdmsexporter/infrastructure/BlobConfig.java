@@ -1,0 +1,12 @@
+package it.pagopa.gov.rtdmsexporter.infrastructure;
+
+public record BlobConfig(
+        String baseUrl,
+        String apiKey,
+        String containerName
+) {
+
+  public static BlobConfig of(String baseUrl, String apiKey, String containerName) {
+    return new BlobConfig(baseUrl, apiKey, containerName);
+  }
+}
