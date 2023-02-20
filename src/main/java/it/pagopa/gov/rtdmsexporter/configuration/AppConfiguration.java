@@ -14,14 +14,15 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AppConfiguration {
 
-  private static final String ACQUIRER_DOWNLOAD_FILE = "acquirer-cards.csv";
+  private static final String ACQUIRER_GENERATED_FILE = "acquirer-cards.csv";
+  private static final String ACQUIRER_ZIP_FILE = "acquirer-cards.zip";
 
   @Bean
   public ExportJobService exportJobService(
           JobLauncher jobLauncher,
           Job jobExport
   ) {
-    return new ExportJobService(jobLauncher, jobExport, ACQUIRER_DOWNLOAD_FILE);
+    return new ExportJobService(jobLauncher, jobExport, ACQUIRER_GENERATED_FILE, ACQUIRER_ZIP_FILE);
   }
 
   @Bean
