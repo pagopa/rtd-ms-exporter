@@ -1,7 +1,11 @@
 package it.pagopa.gov.rtdmsexporter.batch;
 
+import it.pagopa.gov.rtdmsexporter.batch.tasklet.SaveAcquirerFileTasklet;
+import it.pagopa.gov.rtdmsexporter.batch.tasklet.ZipTasklet;
+import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -9,6 +13,7 @@ import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +33,9 @@ import java.util.Optional;
 public class ExportJobConfiguration {
 
   public static final String EXPORT_TO_FILE_STEP = "exportToFileStep";
+  public static final String ZIP_STEP = "zipStep";
+  public static final String UPLOAD_STEP = "uploadStep";
+
   private final JobRepository jobRepository;
   private final PlatformTransactionManager transactionManager;
   private final int readChunkSize;
@@ -35,7 +43,7 @@ public class ExportJobConfiguration {
   public ExportJobConfiguration(
           JobRepository jobRepository,
           PlatformTransactionManager transactionManager,
-          @Value("${exporter.readChunkSize}") int readChunkSize
+          @Value("${exporter.readChunkSize:10}") int readChunkSize
   ) {
     this.jobRepository = jobRepository;
     this.transactionManager = transactionManager;
@@ -43,11 +51,15 @@ public class ExportJobConfiguration {
   }
 
   @Bean
-  Job exportJob(Step readMongoDBStep) {
+  Job exportJob(Step readMongoDBStep, Step zipStep, Step uploadStep) {
     return new JobBuilder("exportJob", jobRepository)
             .preventRestart()
             .incrementer(new RunIdIncrementer())
             .start(readMongoDBStep)
+            .next(zipStep)
+            .on(ExitStatus.COMPLETED.getExitCode())
+            .to(uploadStep)
+            .build()
             .build();
   }
 
@@ -62,13 +74,49 @@ public class ExportJobConfiguration {
   }
 
   @Bean
+  public Step zipStep(
+          Tasklet zipTasklet
+  ) {
+    return new StepBuilder(ZIP_STEP, jobRepository)
+            .tasklet(zipTasklet, transactionManager)
+            .build();
+  }
+
+  @Bean
+  public Step uploadStep(
+          Tasklet saveAcquirerFileTasklet
+  ) {
+    return new StepBuilder(UPLOAD_STEP, jobRepository)
+            .tasklet(saveAcquirerFileTasklet, transactionManager)
+            .build();
+  }
+
+  @Bean
+  @StepScope
+  public Tasklet zipTasklet(
+          @Value("#{jobParameters[acquirerFilename]}") String acquirerFilename,
+          @Value("#{jobParameters[zipFilename]}") String acquirerZipFilename
+  ) {
+    return new ZipTasklet(acquirerFilename, acquirerZipFilename);
+  }
+
+  @Bean
+  @StepScope
+  public Tasklet saveAcquirerFileTasklet(
+          AcquirerFileRepository acquirerFileRepository,
+          @Value("#{jobParameters[zipFilename]}") String acquirerZipFilename
+  ) {
+    return new SaveAcquirerFileTasklet(acquirerZipFilename, acquirerFileRepository);
+  }
+
+  @Bean
   @StepScope
   public KeyPaginatedMongoReader<CardEntity> mongoItemReader(MongoTemplate mongoTemplate) {
     final var query = new Query();
     query.fields().include("hashPan", "hashPanChildren", "par", "exportConfirmed");
     return new KeyPaginatedMongoReaderBuilder<CardEntity>()
             .setMongoTemplate(mongoTemplate)
-            .setCollectionName("enrolled_payment_instrument")
+            .setCollectionName("pippi")
             .setType(CardEntity.class)
             .setKeyName("hashPan")
             .setSortDirection(Sort.Direction.ASC)
