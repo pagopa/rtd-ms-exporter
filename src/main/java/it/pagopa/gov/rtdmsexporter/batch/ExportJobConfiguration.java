@@ -84,12 +84,13 @@ public class ExportJobConfiguration {
   public TaskExecutor taskExecutor() {
     // Number of Cores * [ 1+ (wait time/CPU time)]
     final var cpus = Runtime.getRuntime().availableProcessors();
+    final var corePoolSize = Math.floor(cpus + (0.33 * cpus));
     final var executor = new ThreadPoolTaskExecutor();
-    executor.setCorePoolSize((int) cpus);
-    executor.setMaxPoolSize((int) cpus);
+    executor.setCorePoolSize((int) corePoolSize);
+    executor.setMaxPoolSize((int) corePoolSize);
     executor.afterPropertiesSet();
     executor.initialize();
-    log.info("Using executor with pool size {}", cpus);
+    log.info("Using executor with pool size {}", corePoolSize);
     return executor;
   }
 
