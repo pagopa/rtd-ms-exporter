@@ -90,6 +90,7 @@ public class ExportJobConfiguration {
     final var executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize((int) corePoolSize);
     executor.setMaxPoolSize((int) corePoolSize);
+    executor.setPrestartAllCoreThreads(true);
     executor.afterPropertiesSet();
     executor.initialize();
     log.info("Using executor with pool size {}", corePoolSize);
