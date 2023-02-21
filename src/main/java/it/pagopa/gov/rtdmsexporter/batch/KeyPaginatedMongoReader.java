@@ -55,7 +55,6 @@ public class KeyPaginatedMongoReader<T extends KeyPageableEntity> extends Abstra
         query.addCriteria(Criteria.where(keyName).gt(startingNextKey));
       }
 
-      log.info("Querying with {}", query);
       final var items = PerformanceUtils.timeIt(
               "Query performance",
               () -> mongoTemplate.find(query, type, collectionName)

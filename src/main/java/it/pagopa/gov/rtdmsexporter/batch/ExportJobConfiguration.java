@@ -1,5 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.batch;
 
+import it.pagopa.gov.rtdmsexporter.batch.listener.PerformanceWriterMonitor;
 import it.pagopa.gov.rtdmsexporter.batch.tasklet.SaveAcquirerFileTasklet;
 import it.pagopa.gov.rtdmsexporter.batch.tasklet.ZipTasklet;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
@@ -76,6 +77,7 @@ public class ExportJobConfiguration {
             .processor(cardFlatProcessor())
             .writer(acquirerFileWriter(null))
             .taskExecutor(taskExecutor)
+            .listener(new PerformanceWriterMonitor<>())
             //.listener(new WorkloadDistributionListener<>())
             .build();
   }
@@ -84,7 +86,7 @@ public class ExportJobConfiguration {
   public TaskExecutor taskExecutor() {
     // Number of Cores * [ 1+ (wait time/CPU time)]
     final var cpus = Runtime.getRuntime().availableProcessors();
-    final var corePoolSize = Math.max(2, Math.floor(cpus + (0.33 * cpus)));
+    final var corePoolSize = 4;
     final var executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize((int) corePoolSize);
     executor.setMaxPoolSize((int) corePoolSize);
