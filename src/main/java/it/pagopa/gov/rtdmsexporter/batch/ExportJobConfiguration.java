@@ -146,7 +146,7 @@ public class ExportJobConfiguration {
             .setKeyName("hashPan")
             .setSortDirection(Sort.Direction.ASC)
             .setQuery(query)
-            .setPageSize(1000)
+            .setPageSize(readChunkSize)
             .build();
   }
 
