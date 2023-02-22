@@ -53,7 +53,7 @@ public class ExportJobConfiguration {
   ) {
     this.jobRepository = jobRepository;
     this.transactionManager = transactionManager;
-    this.readChunkSize = 1000;
+    this.readChunkSize = readChunkSize;
   }
 
   @Bean
@@ -64,8 +64,8 @@ public class ExportJobConfiguration {
             .start(readMongoDBStep)
             .on(ExitStatus.COMPLETED.getExitCode())
             .to(zipStep)
-            //.on(ExitStatus.COMPLETED.getExitCode())
-            //.to(uploadStep)
+            .on(ExitStatus.COMPLETED.getExitCode())
+            .to(uploadStep)
             .build()
             .build();
   }
@@ -73,7 +73,7 @@ public class ExportJobConfiguration {
   @Bean
   public Step readMongoDBStep(TaskExecutor taskExecutor) throws Exception {
     return new StepBuilder(EXPORT_TO_FILE_STEP, jobRepository)
-            .<CardEntity, List<String>>chunk(5000, transactionManager)
+            .<CardEntity, List<String>>chunk(readChunkSize, transactionManager)
             .reader(mongoItemReader(null))
             .processor(cardFlatProcessor())
             .writer(acquirerFileWriter(null))
@@ -87,7 +87,7 @@ public class ExportJobConfiguration {
   public TaskExecutor taskExecutor() {
     // Number of Cores * [ 1+ (wait time/CPU time)]
     final var cpus = Runtime.getRuntime().availableProcessors();
-    final var corePoolSize = 4;
+    final var corePoolSize = 8;
     final var executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize((int) corePoolSize);
     executor.setMaxPoolSize((int) corePoolSize);
@@ -146,7 +146,7 @@ public class ExportJobConfiguration {
             .setKeyName("hashPan")
             .setSortDirection(Sort.Direction.ASC)
             .setQuery(query)
-            .setPageSize(readChunkSize)
+            .setPageSize(1000)
             .build();
   }
 
