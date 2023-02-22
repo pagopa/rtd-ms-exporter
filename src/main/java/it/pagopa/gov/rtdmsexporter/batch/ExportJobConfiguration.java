@@ -8,6 +8,7 @@ import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.batch.core.*;
+import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
@@ -52,7 +53,7 @@ public class ExportJobConfiguration {
   ) {
     this.jobRepository = jobRepository;
     this.transactionManager = transactionManager;
-    this.readChunkSize = readChunkSize;
+    this.readChunkSize = 1000;
   }
 
   @Bean
@@ -72,7 +73,7 @@ public class ExportJobConfiguration {
   @Bean
   public Step readMongoDBStep(TaskExecutor taskExecutor) throws Exception {
     return new StepBuilder(EXPORT_TO_FILE_STEP, jobRepository)
-            .<CardEntity, List<String>>chunk(readChunkSize, transactionManager)
+            .<CardEntity, List<String>>chunk(5000, transactionManager)
             .reader(mongoItemReader(null))
             .processor(cardFlatProcessor())
             .writer(acquirerFileWriter(null))
