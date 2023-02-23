@@ -79,6 +79,7 @@ public class ExportJobConfiguration {
             .writer(acquirerFileWriter(null))
             .taskExecutor(taskExecutor)
             .listener(new PerformanceWriterMonitor<>())
+            .throttleLimit(4)
             //.listener(new WorkloadDistributionListener<>())
             .build();
   }
@@ -87,7 +88,7 @@ public class ExportJobConfiguration {
   public TaskExecutor taskExecutor() {
     // Number of Cores * [ 1+ (wait time/CPU time)]
     final var cpus = Runtime.getRuntime().availableProcessors();
-    final var corePoolSize = 8;
+    final var corePoolSize = 4;
     final var executor = new ThreadPoolTaskExecutor();
     executor.setCorePoolSize((int) corePoolSize);
     executor.setMaxPoolSize((int) corePoolSize);
