@@ -12,58 +12,53 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Slf4j
-public class KeyPaginatedMongoReader<T> implements ItemStreamReader<List<T>> {
+public class BatchMongoReader<T> implements ItemStreamReader<T> {
 
   private final MongoTemplate mongoTemplate;
   private final String collectionName;
   private final Query baseQuery;
   private final Class<? extends T> type;
   private final String keyName;
-  private final Sort.Direction sortDirection;
+  private final String keyValue;
+  private final int batchSize;
 
-  private final ConcurrentLinkedQueue<String> partitions;
-
-  public KeyPaginatedMongoReader(
+  public BatchMongoReader(
           MongoTemplate mongoTemplate,
           String collectionName,
           Query query,
           Class<? extends T> type,
           String keyName,
-          Sort.Direction sortDirection,
-          List<String> partitions
-  ) {
+          String keyValue, int batchSize) {
     this.mongoTemplate = mongoTemplate;
     this.collectionName = collectionName;
     this.baseQuery = query;
     this.type = type;
     this.keyName = keyName;
-    this.sortDirection = sortDirection;
-    this.partitions = new ConcurrentLinkedQueue<>(partitions);
+    this.keyValue = keyValue;
+    this.batchSize = batchSize;
   }
 
+  private List<T> items;
+  private int currentIndex = 0;
+
   @Override
-  public List<T> read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
-    final var key = partitions.poll();
-    if (key != null) {
+  public T read() throws Exception, UnexpectedInputException, ParseException, NonTransientResourceException {
+    if (items == null) {
       final var query = Query.of(baseQuery)
               .with(Sort.by(Sort.Direction.ASC, keyName))
-              .limit(10_000);
+              .limit(batchSize)
+              .addCriteria(Criteria.where(keyName).gt(keyValue));
 
-      if (!key.equals("first_page")) {
-        query.addCriteria(Criteria.where(keyName).gt(key));
-      }
-
-      final var items = PerformanceUtils.timeIt(
+      items = (List<T>) PerformanceUtils.timeIt(
               "Query performance",
               () -> mongoTemplate.find(query, type, collectionName)
       );
+      log.info("Size {}", items.size());
 
-      return (List<T>) items;
-    } else {
-      return null;
     }
+
+    return currentIndex < items.size() ? items.get(currentIndex++) : null;
   }
 }
