@@ -95,6 +95,7 @@ graalvmNative {
                 languageVersion = JavaLanguageVersion.of(17)
                 vendor = JvmVendorSpec.matching("GraalVM Community")
             }
+            buildArgs.add("-H:IncludeResources=org/springframework/batch/core/schema-drop-h2.sql")
         }
     }
 }

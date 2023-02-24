@@ -5,6 +5,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 
+import java.util.Collections;
+import java.util.LinkedList;
+
 public class KeyPaginatedMongoReaderBuilder<T extends KeyPageableEntity> {
   private MongoTemplate mongoTemplate;
   private String collectionName;
@@ -50,8 +53,8 @@ public class KeyPaginatedMongoReaderBuilder<T extends KeyPageableEntity> {
   }
 
   public KeyPaginatedMongoReader<T> build() {
-    final var reader = new KeyPaginatedMongoReader<T>(mongoTemplate, collectionName, query, type, keyName, sortDirection);
-    reader.setPageSize(pageSize);
+    final var reader = new KeyPaginatedMongoReader<T>(mongoTemplate, collectionName, query, type, keyName, sortDirection, new LinkedList<>());
+//    reader.setPageSize(pageSize);
     return reader;
   }
 }
