@@ -15,8 +15,8 @@ trigger:
   branches:
     include:
       - develop
-      - uat
-      - main
+#      - uat
+#      - main
   paths:
     include:
       - src/*
@@ -51,14 +51,14 @@ variables:
     containerRegistry: '$(DEV_CONTAINER_REGISTRY_NAME)'
     selfHostedAgentPool: $(DEV_AGENT_POOL)
 
-  ${{ elseif startsWith(variables['Build.SourceBranch'], 'refs/heads/uat') }}:
-    environment: 'UAT'
-    componentTest: false
-    postmanEnvFile: 'rtd_uat.postman_environment.json'
-    dockerRegistryServiceConnection: '$(UAT_CONTAINER_REGISTRY_SERVICE_CONN)'
-    kubernetesServiceConnection: '$(UAT_KUBERNETES_SERVICE_CONN)'
-    containerRegistry: '$(UAT_CONTAINER_REGISTRY_NAME)'
-    selfHostedAgentPool: $(UAT_AGENT_POOL)
+#  ${{ elseif startsWith(variables['Build.SourceBranch'], 'refs/heads/uat') }}:
+#    environment: 'UAT'
+#    componentTest: false
+#    postmanEnvFile: 'rtd_uat.postman_environment.json'
+#    dockerRegistryServiceConnection: '$(UAT_CONTAINER_REGISTRY_SERVICE_CONN)'
+#    kubernetesServiceConnection: '$(UAT_KUBERNETES_SERVICE_CONN)'
+#    containerRegistry: '$(UAT_CONTAINER_REGISTRY_NAME)'
+#    selfHostedAgentPool: $(UAT_AGENT_POOL)
 
   #  ${{ elseif or(startsWith(variables['Build.SourceBranch'], 'refs/heads/main'), eq(parameters.ENV, 'PROD')) }}:
   #    environment: 'PROD'
