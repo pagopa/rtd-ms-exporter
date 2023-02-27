@@ -1,6 +1,5 @@
 package it.pagopa.gov.rtdmsexporter.batch;
 
-import it.pagopa.gov.rtdmsexporter.configuration.BatchConfiguration;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.utils.FileUtils;
 import org.junit.jupiter.api.AfterEach;

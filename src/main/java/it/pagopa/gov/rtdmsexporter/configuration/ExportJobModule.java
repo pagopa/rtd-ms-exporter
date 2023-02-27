@@ -1,12 +1,16 @@
 package it.pagopa.gov.rtdmsexporter.configuration;
 
 import io.reactivex.rxjava3.core.Flowable;
+import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
+import it.pagopa.gov.rtdmsexporter.domain.ChunkWriter;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.MongoPagedCardReader;
 import it.pagopa.gov.rtdmsexporter.infrastructure.ChunkBufferedWriter;
 import it.pagopa.gov.rtdmsexporter.domain.ExportDatabaseStep;
 import it.pagopa.gov.rtdmsexporter.domain.PagedCardReader;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import it.pagopa.gov.rtdmsexporter.infrastructure.step.ExportToFileStep;
+import it.pagopa.gov.rtdmsexporter.infrastructure.step.SaveAcquirerFileStep;
+import it.pagopa.gov.rtdmsexporter.infrastructure.step.ZipStep;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +30,8 @@ import java.util.stream.Stream;
 public class ExportJobModule {
 
   private static final String COLLECTION_NAME = "enrolled_payment_instrument";
+  private static final String ACQUIRER_GENERATED_FILE = "acquirer-cards.csv";
+  private static final String ACQUIRER_ZIP_FILE = "acquirer-cards.zip";
 
   private final int readChunkSize;
 
@@ -39,15 +45,27 @@ public class ExportJobModule {
   ExportDatabaseStep exportDatabaseStep(
           Flowable<List<CardEntity>> source,
           Function<CardEntity, List<String>> flattenCardHashes,
-          ChunkBufferedWriter bufferedWriter
+          ChunkWriter<String> chunkWriter
   ) {
     return new ExportToFileStep(
             source,
             flattenCardHashes,
-            bufferedWriter::write,
+            chunkWriter,
             readChunkSize,
             4
     );
+  }
+
+  @Bean
+  ZipStep zipStep() {
+    return new ZipStep(ACQUIRER_GENERATED_FILE, ACQUIRER_ZIP_FILE);
+  }
+
+  @Bean
+  SaveAcquirerFileStep saveAcquirerFileStep(
+          AcquirerFileRepository acquirerFileRepository
+  ) {
+    return new SaveAcquirerFileStep(ACQUIRER_ZIP_FILE, acquirerFileRepository);
   }
 
   @Bean
@@ -71,15 +89,15 @@ public class ExportJobModule {
   }
 
   @Bean
-  ChunkBufferedWriter chunkBufferedWriter() throws IOException {
-    return new ChunkBufferedWriter(new File("acquirer.csv"));
+  ChunkWriter<String> chunkBufferedWriter() {
+    return new ChunkBufferedWriter(new File(ACQUIRER_GENERATED_FILE));
   }
 
   @Bean
   public PagedCardReader cardReader(MongoTemplate mongoTemplate) {
     final var query = new Query();
     query.fields().include("hashPan", "hashPanChildren", "par", "exportConfirmed");
-    query.addCriteria(Criteria.where("state").is("READY"));
+    query.addCriteria(Criteria.where("state").is("NOT_ENROLLED"));
     return new MongoPagedCardReader(
             mongoTemplate,
             COLLECTION_NAME,

@@ -3,7 +3,6 @@ package it.pagopa.gov.rtdmsexporter.batch;
 
 import com.mongodb.MongoException;
 import it.pagopa.gov.rtdmsexporter.application.ExportJobService;
-import it.pagopa.gov.rtdmsexporter.configuration.BatchConfiguration;
 import it.pagopa.gov.rtdmsexporter.configuration.MockMongoConfiguration;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFile;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;

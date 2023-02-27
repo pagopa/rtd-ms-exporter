@@ -1,31 +1,54 @@
 package it.pagopa.gov.rtdmsexporter.infrastructure;
 
 import com.github.tonivade.purefun.type.Try;
+import it.pagopa.gov.rtdmsexporter.domain.ChunkWriter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
+import java.util.Objects;
 
-public class ChunkBufferedWriter {
-  private final BufferedWriter writer;
+@Slf4j
+public class ChunkBufferedWriter implements ChunkWriter<String> {
+  private final File file;
+  private BufferedWriter writer;
 
-  public ChunkBufferedWriter(File file) throws IOException {
-    writer = new BufferedWriter(new FileWriter(file));
+  public ChunkBufferedWriter(File file) {
+    this.file = file;
   }
 
-  public Try<Integer> write(List<String> items) {
+  @Override
+  public void open() throws IOException {
+    if (Objects.isNull(writer)) {
+      writer = new BufferedWriter(new FileWriter(file));
+    }
+    log.info("File writer has been open");
+  }
+
+  @Override
+  public Try<Long> writeChunk(Iterable<? extends String> items) {
     try {
+      var wrote = 0L;
       synchronized (this) {
         for (var item : items) {
           writer.write(item);
           writer.newLine();
+          wrote += 1;
         }
       }
-      return Try.success(items.size());
+      return Try.success(wrote);
     } catch (IOException ex) {
       return Try.failure(ex);
     }
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (Objects.nonNull(writer)) {
+      writer.close();
+    }
+    log.info("File writer has been closed");
   }
 }

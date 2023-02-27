@@ -1,6 +1,5 @@
 package it.pagopa.gov.rtdmsexporter.batch;
 
-import it.pagopa.gov.rtdmsexporter.configuration.BatchConfiguration;
 import it.pagopa.gov.rtdmsexporter.configuration.MockMongoConfiguration;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import it.pagopa.gov.rtdmsexporter.utils.HashStream;

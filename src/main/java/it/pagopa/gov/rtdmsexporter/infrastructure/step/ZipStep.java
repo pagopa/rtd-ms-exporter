@@ -1,22 +1,17 @@
-package it.pagopa.gov.rtdmsexporter.batch.tasklet;
+package it.pagopa.gov.rtdmsexporter.infrastructure.step;
 
 import it.pagopa.gov.rtdmsexporter.infrastructure.ZipUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.ExitStatus;
-import org.springframework.batch.core.StepContribution;
-import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.repeat.RepeatStatus;
 
 import java.io.File;
 
 @Slf4j
-public class ZipTasklet {
+public class ZipStep {
 
   private final String fileToZip;
   private final String zipFilename;
 
-  public ZipTasklet(String fileToZip, String zipFilename) {
+  public ZipStep(String fileToZip, String zipFilename) {
     this.fileToZip = fileToZip;
     this.zipFilename = zipFilename;
   }
@@ -28,8 +23,11 @@ public class ZipTasklet {
       if (acquirerFile.isPresent()) {
         log.info("Original file to zip deleted {}", toZip);
         return true;
+      } else {
+        log.error("Failed generate zip file {}", zipFilename);
       }
     }
+    log.error("File to zip not found {}", fileToZip);
     return false;
   }
 }

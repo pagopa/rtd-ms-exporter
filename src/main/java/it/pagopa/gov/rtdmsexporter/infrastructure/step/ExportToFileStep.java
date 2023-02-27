@@ -5,6 +5,7 @@ import com.github.tonivade.purefun.type.Try;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import it.pagopa.gov.rtdmsexporter.domain.ChunkWriter;
 import it.pagopa.gov.rtdmsexporter.domain.ExportDatabaseStep;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 
@@ -17,20 +18,20 @@ public class ExportToFileStep implements ExportDatabaseStep {
 
   private final Flowable<List<CardEntity>> source;
   private final Function<CardEntity, List<String>> processElement;
-  private final Function<List<String>, Try<?>> target;
+  private final ChunkWriter<String> chunkWriter;
   private final Scheduler scheduler;
   private final int bufferBeforeWrite;
 
   public ExportToFileStep(
           Flowable<List<CardEntity>> source,
           Function<CardEntity, List<String>> processElement,
-          Function<List<String>, Try<?>> target,
+          ChunkWriter<String> chunkWriter,
           int bufferBeforeWrite,
           int parallelism
   ) {
     this.source = source;
     this.processElement = processElement;
-    this.target = target;
+    this.chunkWriter = chunkWriter;
     this.bufferBeforeWrite = bufferBeforeWrite;
     this.scheduler = Schedulers.from(Executors.newFixedThreadPool(parallelism));
   }
@@ -41,9 +42,11 @@ public class ExportToFileStep implements ExportDatabaseStep {
             .flatMap(this::processToFlowable)
             .observeOn(scheduler)
             .buffer(bufferBeforeWrite)
-            .map(target::apply)
+            .map(chunkWriter::writeChunk)
             .takeWhile(Try::isSuccess)
             .count()
+            .doOnSubscribe(disposable -> chunkWriter.open())
+            .doFinally(() -> chunkWriter.close())
             .blockingGet()
     );
   }

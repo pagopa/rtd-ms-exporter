@@ -6,6 +6,8 @@ import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.domain.ExportDatabaseStep;
 import it.pagopa.gov.rtdmsexporter.infrastructure.BlobAcquirerRepository;
 import it.pagopa.gov.rtdmsexporter.infrastructure.BlobConfig;
+import it.pagopa.gov.rtdmsexporter.infrastructure.step.SaveAcquirerFileStep;
+import it.pagopa.gov.rtdmsexporter.infrastructure.step.ZipStep;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
@@ -33,9 +35,10 @@ public class AppConfiguration {
   @Bean
   ExportJobService exportJobService(
           ExportDatabaseStep exportDatabaseStep,
-          AcquirerFileRepository acquirerFileRepository
+          ZipStep zipStep,
+          SaveAcquirerFileStep saveAcquirerFileStep
   ) {
-    return new ExportJobService(new ExportJob(exportDatabaseStep, acquirerFileRepository, ACQUIRER_GENERATED_FILE));
+    return new ExportJobService(new ExportJob(exportDatabaseStep, zipStep, saveAcquirerFileStep));
   }
 
   @Bean

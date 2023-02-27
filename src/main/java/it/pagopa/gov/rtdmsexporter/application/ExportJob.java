@@ -2,36 +2,33 @@ package it.pagopa.gov.rtdmsexporter.application;
 
 import com.github.tonivade.purefun.type.Try;
 import io.reactivex.rxjava3.core.Flowable;
-import it.pagopa.gov.rtdmsexporter.domain.AcquirerFile;
-import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.domain.ExportDatabaseStep;
+import it.pagopa.gov.rtdmsexporter.infrastructure.step.SaveAcquirerFileStep;
+import it.pagopa.gov.rtdmsexporter.infrastructure.step.ZipStep;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.File;
-import java.nio.file.Files;
 
 @Slf4j
 public class ExportJob {
 
   private final ExportDatabaseStep exportDatabaseStep;
+  private final ZipStep zipStep;
+  private final SaveAcquirerFileStep acquirerFileStep;
 
-  private final String targetFile;
-  private final AcquirerFileRepository acquirerFileRepository;
-
-  public ExportJob(ExportDatabaseStep exportDatabaseStep, AcquirerFileRepository acquirerFileRepository, String targetFile) {
+  public ExportJob(ExportDatabaseStep exportDatabaseStep, ZipStep zipStep, SaveAcquirerFileStep acquirerFileStep) {
     this.exportDatabaseStep = exportDatabaseStep;
-    this.acquirerFileRepository = acquirerFileRepository;
-    this.targetFile = targetFile;
+    this.zipStep = zipStep;
+    this.acquirerFileStep = acquirerFileStep;
   }
 
   Try<Boolean> run() {
-    final var acquirerFile = new AcquirerFile(new File(targetFile));
-    final var disposable = Flowable.just(exportDatabaseStep.execute())
+    return Try.of(() -> Flowable.just(exportDatabaseStep.execute())
             .flatMap(it -> it.fold(error -> Flowable.error(error.getCause()), Flowable::just))
-            .doOnEach(it -> log.info("Exported {} records", it.getValue()))
-            .map(it -> acquirerFileRepository.save(acquirerFile))
-            //.doOnEach(it -> Files.deleteIfExists(acquirerFile.file().toPath()))
-            .subscribe();
-    return Try.success(true);
+            .doOnEach(it -> log.info("Exported {} records, zipping it", it.getValue()))
+            .map(it -> zipStep.execute())
+            .takeWhile(it -> it)
+            .map(it -> acquirerFileStep.execute())
+            .count()
+            .blockingGet() == 1
+    );
   }
 }

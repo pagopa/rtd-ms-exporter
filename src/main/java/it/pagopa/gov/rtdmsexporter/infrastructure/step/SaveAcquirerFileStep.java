@@ -1,25 +1,20 @@
-package it.pagopa.gov.rtdmsexporter.batch.tasklet;
+package it.pagopa.gov.rtdmsexporter.infrastructure.step;
 
 import com.github.tonivade.purefun.type.Try;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFile;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.ExitStatus;
-import org.springframework.batch.core.StepContribution;
-import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.repeat.RepeatStatus;
 
 import java.io.File;
 import java.nio.file.Files;
 
 @Slf4j
-public class SaveAcquirerFileTasklet {
+public class SaveAcquirerFileStep {
 
   private final String fileToUpload;
   private final AcquirerFileRepository acquirerFileRepository;
 
-  public SaveAcquirerFileTasklet(String fileToUpload, AcquirerFileRepository acquirerFileRepository) {
+  public SaveAcquirerFileStep(String fileToUpload, AcquirerFileRepository acquirerFileRepository) {
     this.fileToUpload = fileToUpload;
     this.acquirerFileRepository = acquirerFileRepository;
   }
@@ -32,7 +27,7 @@ public class SaveAcquirerFileTasklet {
               .onFailure(error -> log.warn("Failed to delete uploaded file {}, cause {}", acquirerFile.file().getPath(), error));
       return saved;
     }
-    log.info("File to save doesn't exists {}", fileToUpload);
+    log.error("File to save doesn't exists {}", fileToUpload);
     return false;
   }
 }
