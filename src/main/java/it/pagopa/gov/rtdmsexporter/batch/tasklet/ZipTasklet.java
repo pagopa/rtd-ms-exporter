@@ -1,5 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.batch.tasklet;
 
+import com.github.tonivade.purefun.type.Try;
 import it.pagopa.gov.rtdmsexporter.infrastructure.ZipUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.ExitStatus;
@@ -9,6 +10,7 @@ import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 
 import java.io.File;
+import java.nio.file.Files;
 
 @Slf4j
 public class ZipTasklet implements Tasklet {
@@ -28,7 +30,9 @@ public class ZipTasklet implements Tasklet {
       final var acquirerFile = ZipUtils.zipFile(toZip, zipFilename);
       if (acquirerFile.isPresent()) {
         contribution.setExitStatus(ExitStatus.COMPLETED);
-        log.info("Original file to zip deleted {}", toZip);
+        Try.of(() -> { Files.delete(toZip.toPath()); return true; })
+                .onFailure(error -> log.warn("Failed to delete zipped file {}, cause {}", toZip.getPath(), error))
+                .onSuccess(it -> log.info("Original file {} to zip deleted", toZip));
         return RepeatStatus.FINISHED;
       }
     }

@@ -1,14 +1,16 @@
 package it.pagopa.gov.rtdmsexporter.batch;
 
-import it.pagopa.gov.rtdmsexporter.batch.listener.PerformanceWriterMonitor;
 import it.pagopa.gov.rtdmsexporter.batch.tasklet.SaveAcquirerFileTasklet;
 import it.pagopa.gov.rtdmsexporter.batch.tasklet.ZipTasklet;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
+import it.pagopa.gov.rtdmsexporter.utils.PerformanceUtils;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
-import org.springframework.batch.core.*;
-import org.springframework.batch.core.configuration.annotation.JobScope;
+import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
@@ -31,7 +33,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Configuration
 @Slf4j
@@ -50,11 +54,13 @@ public class ExportJobConfiguration {
   public ExportJobConfiguration(
           JobRepository jobRepository,
           PlatformTransactionManager transactionManager,
-          @Value("${exporter.readChunkSize:10}") int readChunkSize
+          @Value("${exporter.readChunkSize:10}") int readChunkSize,
+          @Value("${exporter.performanceMonitor}") boolean enablePerformanceMonitor
   ) {
     this.jobRepository = jobRepository;
     this.transactionManager = transactionManager;
     this.readChunkSize = readChunkSize;
+    PerformanceUtils.setEnabled(enablePerformanceMonitor);
   }
 
   @Bean
@@ -72,31 +78,32 @@ public class ExportJobConfiguration {
   }
 
   @Bean
-  public Step readMongoDBStep(TaskExecutor taskExecutor) throws Exception {
+  public Step readMongoDBStep(
+          TaskExecutor taskExecutor,
+          @Value("${exporter.corePoolSize}") int corePoolSize
+  ) throws Exception {
     return new StepBuilder(EXPORT_TO_FILE_STEP, jobRepository)
             .<CardEntity, List<String>>chunk(readChunkSize, transactionManager)
             .reader(mongoItemReader(null))
             .processor(cardFlatProcessor())
             .writer(acquirerFileWriter(null))
             .taskExecutor(taskExecutor)
-            .listener(new PerformanceWriterMonitor<>())
-            .throttleLimit(4)
-            //.listener(new WorkloadDistributionListener<>())
+            //.listener(new PerformanceWriterMonitor<>())
+            .throttleLimit(corePoolSize)
             .build();
   }
 
   @Bean
-  public TaskExecutor taskExecutor() {
-    // Number of Cores * [ 1+ (wait time/CPU time)]
-    final var cpus = Runtime.getRuntime().availableProcessors();
-    final var corePoolSize = 4;
+  public TaskExecutor taskExecutor(
+          @Value("${exporter.corePoolSize}") int corePoolSize
+  ) {
     final var executor = new ThreadPoolTaskExecutor();
-    executor.setCorePoolSize((int) corePoolSize);
-    executor.setMaxPoolSize((int) corePoolSize);
+    executor.setCorePoolSize(corePoolSize);
+    executor.setMaxPoolSize(corePoolSize);
     executor.setPrestartAllCoreThreads(true);
     executor.afterPropertiesSet();
     executor.initialize();
-    log.info("Using executor with pool size {}", corePoolSize);
+    log.info("Using executor with pool size {} over {} cpus", corePoolSize, Runtime.getRuntime().availableProcessors());
     return executor;
   }
 

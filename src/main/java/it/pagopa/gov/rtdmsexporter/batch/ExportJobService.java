@@ -5,6 +5,7 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.util.StopWatch;
 
 import java.util.Date;
 
@@ -29,13 +30,16 @@ public class ExportJobService {
 
   public JobExecution execute() throws Exception {
     log.info("Export job started");
+    final var stopWatch = new StopWatch();
     final var parameters = new JobParametersBuilder()
             .addLong("timestamp", new Date().getTime())
             .addString(TARGET_ACQUIRER_FILENAME_KEY, acquirerTargetFile)
             .addString(TARGET_ACQUIRER_ZIP_KEY, acquirerZipTargetFile)
             .toJobParameters();
+    stopWatch.start();
     final var execution = jobLauncher.run(exportJob, parameters);
-    log.info("Export job ends at {}", execution.getEndTime());
+    stopWatch.stop();
+    log.info("Export job ends with {} in {} ms", execution.getExitStatus(), stopWatch.getTotalTimeMillis());
     return execution;
   }
 
