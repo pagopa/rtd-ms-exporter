@@ -75,7 +75,7 @@ class KeyPaginatedMongoReaderTest {
   void whenThereIsItemThenContinueToReadAll() {
     // create cards
     HashStream.of(25)
-            .map(it -> new CardEntity(it, Collections.emptyList(), "", false))
+            .map(it -> new CardEntity(it, Collections.emptyList(), "", false, "READY"))
             .forEach(it -> mongoTemplate.save(it, "cards"));
 
     final var reads = Stream.generate(() -> Try.of(paginatedMongoReader::read))
@@ -89,7 +89,7 @@ class KeyPaginatedMongoReaderTest {
   @Test
   void whenItemsAreSameOfPageSizeThenSecondReadMustBeEmpty() {
     HashStream.of(10)
-            .map(it -> new CardEntity(it, Collections.emptyList(), "", false))
+            .map(it -> new CardEntity(it, Collections.emptyList(), "", false, "READY"))
             .forEach(it -> mongoTemplate.save(it, "cards"));
 
     final var reads = Stream.generate(() -> Try.of(paginatedMongoReader::read))
@@ -104,7 +104,7 @@ class KeyPaginatedMongoReaderTest {
   void whenThereIsNoMoreItemThenLastQueryIsSkipped() {
     // create cards
     HashStream.of(25)
-            .map(it -> new CardEntity(it, Collections.emptyList(), "", false))
+            .map(it -> new CardEntity(it, Collections.emptyList(), "", false, "READY"))
             .forEach(it -> mongoTemplate.save(it, "cards"));
 
     final var readItems = Stream.generate(() -> Try.of(paginatedMongoReader::read))

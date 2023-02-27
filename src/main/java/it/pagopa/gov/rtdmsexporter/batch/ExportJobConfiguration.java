@@ -4,6 +4,9 @@ import it.pagopa.gov.rtdmsexporter.batch.tasklet.SaveAcquirerFileTasklet;
 import it.pagopa.gov.rtdmsexporter.batch.tasklet.ZipTasklet;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
+import it.pagopa.gov.rtdmsexporter.utils.PerformanceUtils;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.Job;
@@ -16,13 +19,18 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.file.FlatFileItemWriter;
+import org.springframework.batch.item.support.SynchronizedItemStreamWriter;
+import org.springframework.batch.item.support.builder.SynchronizedItemStreamWriterBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.util.ArrayList;
@@ -30,6 +38,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Configuration
+@Slf4j
 public class ExportJobConfiguration {
 
   private static final String COLLECTION_NAME = "enrolled_payment_instrument";
@@ -45,11 +54,13 @@ public class ExportJobConfiguration {
   public ExportJobConfiguration(
           JobRepository jobRepository,
           PlatformTransactionManager transactionManager,
-          @Value("${exporter.readChunkSize:10}") int readChunkSize
+          @Value("${exporter.readChunkSize:10}") int readChunkSize,
+          @Value("${exporter.performanceMonitor:false}") Boolean enablePerformanceMonitor
   ) {
     this.jobRepository = jobRepository;
     this.transactionManager = transactionManager;
     this.readChunkSize = readChunkSize;
+    PerformanceUtils.setEnabled(enablePerformanceMonitor);
   }
 
   @Bean
@@ -67,13 +78,29 @@ public class ExportJobConfiguration {
   }
 
   @Bean
-  public Step readMongoDBStep() throws Exception {
+  public Step readMongoDBStep(TaskExecutor taskExecutor) throws Exception {
     return new StepBuilder(EXPORT_TO_FILE_STEP, jobRepository)
             .<CardEntity, List<String>>chunk(readChunkSize, transactionManager)
             .reader(mongoItemReader(null))
             .processor(cardFlatProcessor())
             .writer(acquirerFileWriter(null))
+            .taskExecutor(taskExecutor)
+            //.listener(new PerformanceWriterMonitor<>())
             .build();
+  }
+
+  @Bean
+  public TaskExecutor taskExecutor(
+          @Value("${exporter.corePoolSize}") int corePoolSize
+  ) {
+    final var executor = new ThreadPoolTaskExecutor();
+    executor.setCorePoolSize(corePoolSize);
+    executor.setMaxPoolSize(corePoolSize);
+    executor.setPrestartAllCoreThreads(true);
+    executor.afterPropertiesSet();
+    executor.initialize();
+    log.info("Using executor with pool size {} over {} cpus", corePoolSize, Runtime.getRuntime().availableProcessors());
+    return executor;
   }
 
   @Bean
@@ -117,6 +144,7 @@ public class ExportJobConfiguration {
   public KeyPaginatedMongoReader<CardEntity> mongoItemReader(MongoTemplate mongoTemplate) {
     final var query = new Query();
     query.fields().include("hashPan", "hashPanChildren", "par", "exportConfirmed");
+    query.addCriteria(Criteria.where("state").is("READY"));
     return new KeyPaginatedMongoReaderBuilder<CardEntity>()
             .setMongoTemplate(mongoTemplate)
             .setCollectionName(COLLECTION_NAME)
@@ -141,7 +169,7 @@ public class ExportJobConfiguration {
 
   @Bean
   @StepScope
-  public FlatFileItemWriter<List<String>> acquirerFileWriter(
+  public SynchronizedItemStreamWriter<List<String>> acquirerFileWriter(
           @Value("#{jobParameters[acquirerFilename]}") String acquirerFilename
   ) throws Exception {
     final var fileWriter = new FlatFileItemWriter<List<String>>();
@@ -151,6 +179,8 @@ public class ExportJobConfiguration {
     fileWriter.setForceSync(true);
     fileWriter.setLineAggregator(item -> Strings.join(item, '\n'));
     fileWriter.afterPropertiesSet();
-    return fileWriter;
+    return new SynchronizedItemStreamWriterBuilder<List<String>>()
+            .delegate(fileWriter)
+            .build();
   }
 }

@@ -1,6 +1,8 @@
 package it.pagopa.gov.rtdmsexporter.batch;
 
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.KeyPageableEntity;
+import it.pagopa.gov.rtdmsexporter.utils.PerformanceUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.data.AbstractPaginatedDataItemReader;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -11,6 +13,7 @@ import org.springframework.util.ClassUtils;
 import java.util.Collections;
 import java.util.Iterator;
 
+@Slf4j
 public class KeyPaginatedMongoReader<T extends KeyPageableEntity> extends AbstractPaginatedDataItemReader<T> {
 
   private final MongoTemplate mongoTemplate;
@@ -52,7 +55,10 @@ public class KeyPaginatedMongoReader<T extends KeyPageableEntity> extends Abstra
         query.addCriteria(Criteria.where(keyName).gt(startingNextKey));
       }
 
-      final var items = mongoTemplate.find(query, type, collectionName);
+      final var items = PerformanceUtils.timeIt(
+              "Query performance",
+              () -> mongoTemplate.find(query, type, collectionName)
+      );
 
       if (!items.isEmpty()) {
         startingNextKey = items.get(items.size() - 1).getKey();

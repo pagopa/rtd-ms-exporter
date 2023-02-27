@@ -2,6 +2,8 @@ package it.pagopa.gov.rtdmsexporter.batch;
 
 import it.pagopa.gov.rtdmsexporter.configuration.BatchConfiguration;
 import it.pagopa.gov.rtdmsexporter.configuration.MockMongoConfiguration;
+import it.pagopa.gov.rtdmsexporter.configuration.SyncJobExecutor;
+import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import it.pagopa.gov.rtdmsexporter.utils.HashStream;
 import org.junit.jupiter.api.AfterEach;
@@ -15,6 +17,7 @@ import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.batch.test.JobRepositoryTestUtils;
 import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -33,15 +36,16 @@ import java.util.stream.Stream;
 import static it.pagopa.gov.rtdmsexporter.batch.ExportJobConfiguration.EXPORT_TO_FILE_STEP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @SpringBatchTest
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
-@Import(MockMongoConfiguration.class)
+@Import({MockMongoConfiguration.class, ExportToFileStepTest.Config.class, SyncJobExecutor.class })
 @ContextConfiguration(classes = { ExportJobConfiguration.class, BatchConfiguration.class })
 @TestExecutionListeners({ DependencyInjectionTestExecutionListener.class })
-@TestPropertySource(properties = "exporter.readChunkSize=10")
+@TestPropertySource(locations = "classpath:application.yml")
 class ExportToFileStepTest {
 
   @Autowired
@@ -68,7 +72,7 @@ class ExportToFileStepTest {
   @Test
   void whenCardsAvailableThenWriteToFileFlatten() throws Exception {
     final var cards = HashStream.of(20)
-            .map(it -> new CardEntity(it, HashStream.of(2, it).collect(Collectors.toList()), "", false))
+            .map(it -> new CardEntity(it, HashStream.of(2, it).collect(Collectors.toList()), "", false, "READY"))
             .collect(Collectors.toList());
     when(mongoTemplate.find(any(Query.class), eq(CardEntity.class), anyString())).thenReturn(cards);
 
@@ -86,5 +90,12 @@ class ExportToFileStepTest {
                     .flatMap(it -> Stream.concat(Stream.of(it.getHashPan()), it.getHashPanChildren().stream()))
                     .collect(Collectors.toList())
     );
+  }
+
+  static class Config {
+    @Bean
+    AcquirerFileRepository acquirerFileRepository() {
+      return mock(AcquirerFileRepository.class);
+    }
   }
 }
