@@ -5,4 +5,4 @@ exporter:
   cronExpression: "-"
   readChunkSize: 10
   corePoolSize: 4
-  performanceMonitor: false
+  performanceMonitor: true
