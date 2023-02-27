@@ -1,6 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.ports;
 
-import it.pagopa.gov.rtdmsexporter.batch.ExportJobService;
+import it.pagopa.gov.rtdmsexporter.application.ExportJobService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.batch.test.MetaDataInstanceFactory;

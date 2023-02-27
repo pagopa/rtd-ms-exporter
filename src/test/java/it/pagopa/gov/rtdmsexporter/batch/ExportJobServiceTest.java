@@ -1,5 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.batch;
 
+import it.pagopa.gov.rtdmsexporter.application.ExportJobService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -8,8 +9,8 @@ import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.test.MetaDataInstanceFactory;
 
-import static it.pagopa.gov.rtdmsexporter.batch.ExportJobService.TARGET_ACQUIRER_FILENAME_KEY;
-import static it.pagopa.gov.rtdmsexporter.batch.ExportJobService.TARGET_ACQUIRER_ZIP_KEY;
+import static it.pagopa.gov.rtdmsexporter.application.ExportJobService.TARGET_ACQUIRER_FILENAME_KEY;
+import static it.pagopa.gov.rtdmsexporter.application.ExportJobService.TARGET_ACQUIRER_ZIP_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;

@@ -1,8 +1,9 @@
 package it.pagopa.gov.rtdmsexporter.configuration;
 
-import it.pagopa.gov.rtdmsexporter.batch.ExportJob;
-import it.pagopa.gov.rtdmsexporter.batch.ExportJobService;
+import it.pagopa.gov.rtdmsexporter.application.ExportJob;
+import it.pagopa.gov.rtdmsexporter.application.ExportJobService;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
+import it.pagopa.gov.rtdmsexporter.domain.ExportDatabaseStep;
 import it.pagopa.gov.rtdmsexporter.infrastructure.BlobAcquirerRepository;
 import it.pagopa.gov.rtdmsexporter.infrastructure.BlobConfig;
 import org.apache.http.config.RegistryBuilder;
@@ -15,8 +16,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,10 +31,11 @@ public class AppConfiguration {
   private static final String ACQUIRER_ZIP_FILE = "acquirer-cards.zip";
 
   @Bean
-  public ExportJobService exportJobService(
-          ExportJob exportJob
+  ExportJobService exportJobService(
+          ExportDatabaseStep exportDatabaseStep,
+          AcquirerFileRepository acquirerFileRepository
   ) {
-    return new ExportJobService(exportJob, ACQUIRER_GENERATED_FILE, ACQUIRER_ZIP_FILE);
+    return new ExportJobService(new ExportJob(exportDatabaseStep, acquirerFileRepository, ACQUIRER_GENERATED_FILE));
   }
 
   @Bean
