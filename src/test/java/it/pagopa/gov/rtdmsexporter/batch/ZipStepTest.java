@@ -1,6 +1,7 @@
 package it.pagopa.gov.rtdmsexporter.batch;
 
 import it.pagopa.gov.rtdmsexporter.configuration.BatchConfiguration;
+import it.pagopa.gov.rtdmsexporter.configuration.SyncJobExecutor;
 import it.pagopa.gov.rtdmsexporter.infrastructure.ZipUtils;
 import it.pagopa.gov.rtdmsexporter.utils.FileUtils;
 import it.pagopa.gov.rtdmsexporter.utils.HashStream;
@@ -16,8 +17,10 @@ import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.batch.test.JobRepositoryTestUtils;
 import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
@@ -34,8 +37,10 @@ import static org.mockito.Mockito.mockStatic;
 @SpringBatchTest
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
+@Import(SyncJobExecutor.class)
 @ContextConfiguration(classes = { ExportJobConfiguration.class, BatchConfiguration.class })
 @TestExecutionListeners({ DependencyInjectionTestExecutionListener.class })
+@TestPropertySource(locations = "classpath:application.yml")
 class ZipStepTest {
 
   private static final String TEST_ACQUIRER_FILE = "./test_out_acquirer.csv";
@@ -87,4 +92,6 @@ class ZipStepTest {
       assertThat(jobExecution.getExitStatus()).isEqualTo(ExitStatus.FAILED);
     }
   }
+
+
 }

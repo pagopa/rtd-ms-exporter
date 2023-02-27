@@ -4,6 +4,7 @@ package it.pagopa.gov.rtdmsexporter.batch;
 import com.mongodb.MongoException;
 import it.pagopa.gov.rtdmsexporter.configuration.BatchConfiguration;
 import it.pagopa.gov.rtdmsexporter.configuration.MockMongoConfiguration;
+import it.pagopa.gov.rtdmsexporter.configuration.SyncJobExecutor;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFile;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.infrastructure.ZipUtils;
@@ -27,6 +28,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
@@ -43,9 +45,10 @@ import static org.mockito.Mockito.*;
 @SpringBatchTest
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
-@Import(ExportJobTest.Config.class)
+@Import({ExportJobTest.Config.class, SyncJobExecutor.class })
 @ContextConfiguration(classes = { MockMongoConfiguration.class, ExportJobConfiguration.class, BatchConfiguration.class })
 @TestExecutionListeners({ DependencyInjectionTestExecutionListener.class })
+@TestPropertySource(locations = "classpath:application.yml")
 class ExportJobTest {
 
   private static final String TEST_ACQUIRER_FILE = "output.csv";
@@ -70,7 +73,7 @@ class ExportJobTest {
             .addString(ExportJobService.TARGET_ACQUIRER_ZIP_KEY, TEST_ZIP_ACQUIRER_FILE)
             .toJobParameters();
     final var cards = HashStream.of(20)
-            .map(it -> new CardEntity(it, HashStream.of(2, it).collect(Collectors.toList()), "", false))
+            .map(it -> new CardEntity(it, HashStream.of(2, it).collect(Collectors.toList()), "", false, "READY"))
             .collect(Collectors.toList());
     when(mongoTemplate.find(any(Query.class), eq(CardEntity.class), anyString())).thenReturn(cards);
   }

@@ -1,6 +1,7 @@
 package it.pagopa.gov.rtdmsexporter.batch;
 
 import it.pagopa.gov.rtdmsexporter.configuration.BatchConfiguration;
+import it.pagopa.gov.rtdmsexporter.configuration.SyncJobExecutor;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.utils.FileUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -35,7 +36,7 @@ import static org.mockito.Mockito.*;
 @SpringBatchTest
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
-@Import(SaveAcquirerFileTaskletTest.Config.class)
+@Import({SaveAcquirerFileTaskletTest.Config.class, SyncJobExecutor.class })
 @ContextConfiguration(classes = { ExportJobConfiguration.class, BatchConfiguration.class })
 @TestExecutionListeners({ DependencyInjectionTestExecutionListener.class })
 class SaveAcquirerFileTaskletTest {

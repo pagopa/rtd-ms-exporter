@@ -1,2 +1,8 @@
 spring.data.mongodb.database: rtd
 spring.data.mongodb.port: 27017
+
+exporter:
+  cronExpression: "-"
+  readChunkSize: 10
+  corePoolSize: 4
+  performanceMonitor: false

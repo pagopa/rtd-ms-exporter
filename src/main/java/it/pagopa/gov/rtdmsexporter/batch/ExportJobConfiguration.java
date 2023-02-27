@@ -55,7 +55,7 @@ public class ExportJobConfiguration {
           JobRepository jobRepository,
           PlatformTransactionManager transactionManager,
           @Value("${exporter.readChunkSize:10}") int readChunkSize,
-          @Value("${exporter.performanceMonitor}") boolean enablePerformanceMonitor
+          @Value("${exporter.performanceMonitor:false}") Boolean enablePerformanceMonitor
   ) {
     this.jobRepository = jobRepository;
     this.transactionManager = transactionManager;
@@ -78,10 +78,7 @@ public class ExportJobConfiguration {
   }
 
   @Bean
-  public Step readMongoDBStep(
-          TaskExecutor taskExecutor,
-          @Value("${exporter.corePoolSize}") int corePoolSize
-  ) throws Exception {
+  public Step readMongoDBStep(TaskExecutor taskExecutor) throws Exception {
     return new StepBuilder(EXPORT_TO_FILE_STEP, jobRepository)
             .<CardEntity, List<String>>chunk(readChunkSize, transactionManager)
             .reader(mongoItemReader(null))
@@ -89,7 +86,6 @@ public class ExportJobConfiguration {
             .writer(acquirerFileWriter(null))
             .taskExecutor(taskExecutor)
             //.listener(new PerformanceWriterMonitor<>())
-            .throttleLimit(corePoolSize)
             .build();
   }
 
