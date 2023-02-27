@@ -14,7 +14,7 @@ import java.io.File;
 import java.nio.file.Files;
 
 @Slf4j
-public class SaveAcquirerFileTasklet implements Tasklet {
+public class SaveAcquirerFileTasklet {
 
   private final String fileToUpload;
   private final AcquirerFileRepository acquirerFileRepository;
@@ -24,18 +24,15 @@ public class SaveAcquirerFileTasklet implements Tasklet {
     this.acquirerFileRepository = acquirerFileRepository;
   }
 
-  @Override
-  public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+  public boolean execute() throws Exception {
     final var acquirerFile = new AcquirerFile(new File(fileToUpload));
     if (acquirerFile.file().exists()) {
       final var saved = acquirerFileRepository.save(acquirerFile);
-      contribution.setExitStatus(saved ? ExitStatus.COMPLETED : ExitStatus.FAILED);
       Try.of(() -> { Files.delete(acquirerFile.file().toPath()); return true; })
               .onFailure(error -> log.warn("Failed to delete uploaded file {}, cause {}", acquirerFile.file().getPath(), error));
-      return RepeatStatus.FINISHED;
+      return saved;
     }
-    contribution.setExitStatus(ExitStatus.FAILED);
     log.info("File to save doesn't exists {}", fileToUpload);
-    return null;
+    return false;
   }
 }

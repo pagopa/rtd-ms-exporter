@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.util.StopWatch;
 
 import java.util.Date;
 
@@ -21,9 +22,10 @@ public class JobSchedulerConfig {
 
   @Scheduled(cron = "${exporter.cronExpression}")
   public void scheduledJob() throws Exception {
-    final var start = new Date();
-    log.info("Export job started at {}", start);
-    final var execution = exportJobService.execute();
-    log.info("Export job ends at {}", execution.getEndTime());
+    final var stopWatch = new StopWatch();
+    stopWatch.start();
+    exportJobService.execute();
+    stopWatch.stop();
+    log.info("Export job ends at {}", stopWatch.getTotalTimeMillis());
   }
 }

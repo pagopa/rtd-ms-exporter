@@ -11,7 +11,7 @@ import org.springframework.batch.repeat.RepeatStatus;
 import java.io.File;
 
 @Slf4j
-public class ZipTasklet implements Tasklet {
+public class ZipTasklet {
 
   private final String fileToZip;
   private final String zipFilename;
@@ -21,18 +21,15 @@ public class ZipTasklet implements Tasklet {
     this.zipFilename = zipFilename;
   }
 
-  @Override
-  public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+  public boolean execute() throws Exception {
     final var toZip = new File(fileToZip);
     if (toZip.exists()) {
       final var acquirerFile = ZipUtils.zipFile(toZip, zipFilename);
       if (acquirerFile.isPresent()) {
-        contribution.setExitStatus(ExitStatus.COMPLETED);
         log.info("Original file to zip deleted {}", toZip);
-        return RepeatStatus.FINISHED;
+        return true;
       }
     }
-    contribution.setExitStatus(ExitStatus.FAILED);
-    return null;
+    return false;
   }
 }

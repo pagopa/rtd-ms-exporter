@@ -1,5 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.configuration;
 
+import it.pagopa.gov.rtdmsexporter.batch.ExportJob;
 import it.pagopa.gov.rtdmsexporter.batch.ExportJobService;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.infrastructure.BlobAcquirerRepository;
@@ -32,10 +33,9 @@ public class AppConfiguration {
 
   @Bean
   public ExportJobService exportJobService(
-          JobLauncher jobLauncher,
-          Job jobExport
+          ExportJob exportJob
   ) {
-    return new ExportJobService(jobLauncher, jobExport, ACQUIRER_GENERATED_FILE, ACQUIRER_ZIP_FILE);
+    return new ExportJobService(exportJob, ACQUIRER_GENERATED_FILE, ACQUIRER_ZIP_FILE);
   }
 
   @Bean

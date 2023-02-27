@@ -2,6 +2,7 @@ logging:
   level:
     root: INFO
 
+
 exporter:
   cronExpression: ${CRON_EXPRESSION_BATCH:-}
   readChunkSize: ${READ_CHUNK_SIZE:10000}
@@ -32,3 +33,5 @@ spring:
     mongodb:
       uri: ${MONGODB_CONNECTION_URI:mongodb://localhost:27017}
       database: ${MONGODB_NAME:rtd}
+server:
+  port: 8081
