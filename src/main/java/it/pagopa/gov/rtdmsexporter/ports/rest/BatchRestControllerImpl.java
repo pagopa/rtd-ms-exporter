@@ -1,7 +1,7 @@
 package it.pagopa.gov.rtdmsexporter.ports.rest;
 
 
-import it.pagopa.gov.rtdmsexporter.batch.ExportJobService;
+import it.pagopa.gov.rtdmsexporter.application.ExportJobService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

@@ -1,8 +1,9 @@
-package it.pagopa.gov.rtdmsexporter.batch;
-
+package it.pagopa.gov.rtdmsexporter.application;
 
 import com.mongodb.MongoException;
-import it.pagopa.gov.rtdmsexporter.configuration.BatchConfiguration;
+import io.vavr.control.Try;
+import it.pagopa.gov.rtdmsexporter.configuration.AppConfiguration;
+import it.pagopa.gov.rtdmsexporter.configuration.ExportJobModule;
 import it.pagopa.gov.rtdmsexporter.configuration.MockMongoConfiguration;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFile;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
@@ -15,18 +16,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.batch.core.*;
-import org.springframework.batch.test.JobLauncherTestUtils;
-import org.springframework.batch.test.JobRepositoryTestUtils;
-import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
@@ -40,19 +38,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-@SpringBatchTest
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
 @Import(ExportJobTest.Config.class)
-@ContextConfiguration(classes = { MockMongoConfiguration.class, ExportJobConfiguration.class, BatchConfiguration.class })
+@ContextConfiguration(classes = { MockMongoConfiguration.class, ExportJobModule.class, AppConfiguration.class })
 @TestExecutionListeners({ DependencyInjectionTestExecutionListener.class })
+@TestPropertySource(locations = "classpath:application.yml")
 class ExportJobTest {
 
   private static final String TEST_ACQUIRER_FILE = "output.csv";
   private static final String TEST_ZIP_ACQUIRER_FILE = "output.zip";
-
-  @Autowired
-  private JobLauncherTestUtils jobLauncherTestUtils;
 
   @Autowired
   private MongoTemplate mongoTemplate;
@@ -60,15 +55,11 @@ class ExportJobTest {
   @Autowired
   private AcquirerFileRepository acquirerFileRepository;
 
-  private JobParameters jobParameters;
+  @Autowired
+  private ExportJobService exportJobService;
 
   @BeforeEach
-  void setup(@Autowired Job exportJob) {
-    jobLauncherTestUtils.setJob(exportJob);
-    jobParameters = new JobParametersBuilder()
-            .addString(ExportJobService.TARGET_ACQUIRER_FILENAME_KEY, TEST_ACQUIRER_FILE)
-            .addString(ExportJobService.TARGET_ACQUIRER_ZIP_KEY, TEST_ZIP_ACQUIRER_FILE)
-            .toJobParameters();
+  void setup() {
     final var cards = HashStream.of(20)
             .map(it -> new CardEntity(it, HashStream.of(2, it).collect(Collectors.toList()), "", false))
             .collect(Collectors.toList());
@@ -76,19 +67,17 @@ class ExportJobTest {
   }
 
   @AfterEach
-  void cleanup(@Autowired JobRepositoryTestUtils jobRepositoryTestUtils) throws IOException {
+  void cleanup() throws IOException {
     Files.deleteIfExists(Path.of(TEST_ACQUIRER_FILE));
     Files.deleteIfExists(Path.of(TEST_ZIP_ACQUIRER_FILE));
     reset(mongoTemplate, acquirerFileRepository);
-    jobRepositoryTestUtils.removeJobExecutions();
   }
 
   @Test
   void whenCardAvailableThenCompleteJob() throws Exception {
     final var captor = ArgumentCaptor.forClass(AcquirerFile.class);
     when(acquirerFileRepository.save(any())).thenReturn(true);
-    final var result = jobLauncherTestUtils.launchJob(jobParameters);
-    assertThat(result.getExitStatus()).isEqualTo(ExitStatus.COMPLETED);
+    assertThat(exportJobService.execute()).contains(true);
     verify(acquirerFileRepository, times(1)).save(captor.capture());
     assertThat(captor.getValue().file().getPath()).contains(".zip");
   }
@@ -96,7 +85,7 @@ class ExportJobTest {
   @Test
   void whenExportToFileFailThenSkipUploadAndJobFail() throws Exception {
     when(mongoTemplate.find(any(Query.class), eq(CardEntity.class), anyString())).thenThrow(new MongoException("Error"));
-    assertThat(jobLauncherTestUtils.launchJob(jobParameters).getStatus()).isEqualTo(BatchStatus.FAILED);
+    assertThat(exportJobService.execute()).isEmpty();
     verify(acquirerFileRepository, times(0)).save(any());
   }
 
@@ -104,7 +93,7 @@ class ExportJobTest {
   void whenZipFailThenSkipUploadAndFail() throws Exception {
     try (final var zipUtils = mockStatic(ZipUtils.class)) {
       zipUtils.when(() -> ZipUtils.zipFile(any(), any())).thenReturn(Optional.empty());
-      assertThat(jobLauncherTestUtils.launchJob(jobParameters).getExitStatus()).isEqualTo(ExitStatus.FAILED);
+      assertThat(exportJobService.execute()).contains(false);
       verify(acquirerFileRepository, times(0)).save(any());
     }
   }
@@ -112,13 +101,15 @@ class ExportJobTest {
   @Test
   void whenUploadFailThenJobFail() throws Exception {
     when(acquirerFileRepository.save(any())).thenReturn(false);
-    assertThat(jobLauncherTestUtils.launchJob(jobParameters).getExitStatus()).isEqualTo(ExitStatus.FAILED);
+    assertThat(exportJobService.execute()).contains(false);
   }
 
   @TestConfiguration
   static class Config {
-    @MockBean
-    private AcquirerFileRepository acquirerFileRepository;
+    @Bean
+    AcquirerFileRepository acquirerFileRepository() {
+      return mock(AcquirerFileRepository.class);
+    }
   }
 }
 

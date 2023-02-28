@@ -1,7 +1,9 @@
-package it.pagopa.gov.rtdmsexporter.batch;
+package it.pagopa.gov.rtdmsexporter.infrastructure;
 
-import com.github.tonivade.purefun.type.Try;
+import io.vavr.control.Try;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
+import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.MongoPagedCardReader;
+import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.MongoPagedCardReaderBuilder;
 import it.pagopa.gov.rtdmsexporter.utils.HashStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,8 +23,8 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,21 +50,20 @@ class KeyPaginatedMongoReaderTest {
   private MongoTemplate mongoTemplate;
 
   private MongoTemplate mongoTemplateSpy;
-  private KeyPaginatedMongoReader<CardEntity> paginatedMongoReader;
+  private MongoPagedCardReader paginatedMongoReader;
 
   @BeforeEach
   void setup() {
     mongoTemplate.indexOps("cards")
             .ensureIndex(new Index().on("hashPan", Sort.Direction.ASC).unique());
     mongoTemplateSpy = Mockito.spy(mongoTemplate);
-    paginatedMongoReader = new KeyPaginatedMongoReaderBuilder<CardEntity>()
+    paginatedMongoReader = new MongoPagedCardReaderBuilder()
             .setMongoTemplate(mongoTemplateSpy)
             .setKeyName("hashPan")
             .setCollectionName("cards")
             .setSortDirection(Sort.Direction.ASC)
-            .setType(CardEntity.class)
             .setPageSize(10)
-            .setQuery(new Query())
+            .setBaseQuery(new Query())
             .build();
   }
 
@@ -79,8 +80,9 @@ class KeyPaginatedMongoReaderTest {
             .forEach(it -> mongoTemplate.save(it, "cards"));
 
     final var reads = Stream.generate(() -> Try.of(paginatedMongoReader::read))
-            .map(Try::getOrElseNull)
-            .takeWhile(Objects::nonNull)
+            .map(Try::get)
+            .takeWhile(it -> !it.isEmpty())
+            .flatMap(Collection::stream)
             .collect(Collectors.toSet());
 
     assertThat(reads).hasSize(25);
@@ -93,8 +95,9 @@ class KeyPaginatedMongoReaderTest {
             .forEach(it -> mongoTemplate.save(it, "cards"));
 
     final var reads = Stream.generate(() -> Try.of(paginatedMongoReader::read))
-            .map(Try::getOrElseNull)
-            .takeWhile(Objects::nonNull)
+            .map(Try::get)
+            .takeWhile(it -> !it.isEmpty())
+            .flatMap(Collection::stream)
             .collect(Collectors.toSet());
 
     assertThat(reads).hasSize(10);
@@ -108,8 +111,9 @@ class KeyPaginatedMongoReaderTest {
             .forEach(it -> mongoTemplate.save(it, "cards"));
 
     final var readItems = Stream.generate(() -> Try.of(paginatedMongoReader::read))
-            .map(Try::getOrElseNull)
-            .takeWhile(Objects::nonNull)
+            .map(Try::get)
+            .takeWhile(it -> !it.isEmpty())
+            .flatMap(Collection::stream)
             .count();
 
     assertThat(readItems).isEqualTo(25);

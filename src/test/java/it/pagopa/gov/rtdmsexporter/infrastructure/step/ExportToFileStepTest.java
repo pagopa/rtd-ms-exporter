@@ -1,6 +1,7 @@
-package it.pagopa.gov.rtdmsexporter.batch;
+package it.pagopa.gov.rtdmsexporter.infrastructure.step;
 
-import it.pagopa.gov.rtdmsexporter.configuration.BatchConfiguration;
+import it.pagopa.gov.rtdmsexporter.configuration.AppConfiguration;
+import it.pagopa.gov.rtdmsexporter.configuration.ExportJobModule;
 import it.pagopa.gov.rtdmsexporter.configuration.MockMongoConfiguration;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import it.pagopa.gov.rtdmsexporter.utils.HashStream;
@@ -9,11 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.batch.core.ExitStatus;
-import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.test.JobLauncherTestUtils;
-import org.springframework.batch.test.JobRepositoryTestUtils;
-import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -30,30 +26,24 @@ import java.nio.file.Path;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static it.pagopa.gov.rtdmsexporter.batch.ExportJobConfiguration.EXPORT_TO_FILE_STEP;
+import static it.pagopa.gov.rtdmsexporter.configuration.ExportJobModule.ACQUIRER_GENERATED_FILE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
-@SpringBatchTest
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
 @Import(MockMongoConfiguration.class)
-@ContextConfiguration(classes = { ExportJobConfiguration.class, BatchConfiguration.class })
-@TestExecutionListeners({ DependencyInjectionTestExecutionListener.class })
-@TestPropertySource(properties = "exporter.readChunkSize=10")
+@ContextConfiguration(classes = {ExportJobModule.class, AppConfiguration.class})
+@TestExecutionListeners({DependencyInjectionTestExecutionListener.class})
+@TestPropertySource(locations = "classpath:application.yml")
 class ExportToFileStepTest {
 
   @Autowired
-  private JobLauncherTestUtils jobLauncherTestUtils;
-
-  @Autowired
-  private JobRepositoryTestUtils jobRepositoryTestUtils;
+  private ExportToFileStep exportToFileStep;
 
   @Autowired
   private MongoTemplate mongoTemplate;
-
-  private static final String TEST_ACQUIRER_FILE = "./test_out_acquirer.csv";
 
   @BeforeEach
   void setup() {
@@ -61,8 +51,7 @@ class ExportToFileStepTest {
 
   @AfterEach
   public void cleanUp() throws IOException {
-    jobRepositoryTestUtils.removeJobExecutions();
-    Files.deleteIfExists(Path.of(TEST_ACQUIRER_FILE));
+    Files.deleteIfExists(Path.of(ACQUIRER_GENERATED_FILE));
   }
 
   @Test
@@ -72,19 +61,14 @@ class ExportToFileStepTest {
             .collect(Collectors.toList());
     when(mongoTemplate.find(any(Query.class), eq(CardEntity.class), anyString())).thenReturn(cards);
 
-    final var jobParameters = new JobParametersBuilder()
-            .addString("acquirerFilename", TEST_ACQUIRER_FILE)
-            .toJobParameters();
-
     // Run the job and check the result
-    final var jobExecution = jobLauncherTestUtils.launchStep(EXPORT_TO_FILE_STEP, jobParameters);
-    assertThat(jobExecution.getExitStatus()).isEqualTo(ExitStatus.COMPLETED);
+    assertThat(exportToFileStep.execute()).first().matches(it -> it > 0);
 
-    final var written = Files.readAllLines(Path.of(TEST_ACQUIRER_FILE));
-    assertThat(written).hasSameElementsAs(
-            cards.stream()
-                    .flatMap(it -> Stream.concat(Stream.of(it.getHashPan()), it.getHashPanChildren().stream()))
-                    .collect(Collectors.toList())
-    );
+    final var written = Files.readAllLines(Path.of(ACQUIRER_GENERATED_FILE));
+    final var expectedEntries = cards.stream()
+            .flatMap(it -> Stream.concat(Stream.of(it.getHashPan()), it.getHashPanChildren().stream()))
+            .toList();
+
+    assertThat(written).isNotEmpty().hasSameElementsAs(expectedEntries);
   }
 }

@@ -1,9 +1,13 @@
 package it.pagopa.gov.rtdmsexporter.configuration;
 
-import it.pagopa.gov.rtdmsexporter.batch.ExportJobService;
+import it.pagopa.gov.rtdmsexporter.application.ExportJob;
+import it.pagopa.gov.rtdmsexporter.application.ExportJobService;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
+import it.pagopa.gov.rtdmsexporter.domain.ExportDatabaseStep;
 import it.pagopa.gov.rtdmsexporter.infrastructure.BlobAcquirerRepository;
 import it.pagopa.gov.rtdmsexporter.infrastructure.BlobConfig;
+import it.pagopa.gov.rtdmsexporter.infrastructure.step.SaveAcquirerFileStep;
+import it.pagopa.gov.rtdmsexporter.infrastructure.step.ZipStep;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
@@ -14,8 +18,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContexts;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,15 +29,13 @@ import java.security.NoSuchAlgorithmException;
 @Configuration
 public class AppConfiguration {
 
-  private static final String ACQUIRER_GENERATED_FILE = "acquirer-cards.csv";
-  private static final String ACQUIRER_ZIP_FILE = "acquirer-cards.zip";
-
   @Bean
-  public ExportJobService exportJobService(
-          JobLauncher jobLauncher,
-          Job jobExport
+  ExportJobService exportJobService(
+          ExportDatabaseStep exportDatabaseStep,
+          ZipStep zipStep,
+          SaveAcquirerFileStep saveAcquirerFileStep
   ) {
-    return new ExportJobService(jobLauncher, jobExport, ACQUIRER_GENERATED_FILE, ACQUIRER_ZIP_FILE);
+    return new ExportJobService(new ExportJob(exportDatabaseStep, zipStep, saveAcquirerFileStep));
   }
 
   @Bean

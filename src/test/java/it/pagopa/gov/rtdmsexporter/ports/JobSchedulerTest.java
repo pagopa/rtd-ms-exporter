@@ -1,9 +1,9 @@
 package it.pagopa.gov.rtdmsexporter.ports;
 
-import it.pagopa.gov.rtdmsexporter.batch.ExportJobService;
+import io.vavr.control.Try;
+import it.pagopa.gov.rtdmsexporter.application.ExportJobService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.batch.test.MetaDataInstanceFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
@@ -25,7 +25,7 @@ class JobSchedulerTest {
 
   @Test
   void shouldRunJobRepeatedly() throws Exception {
-    when(exportJobService.execute()).thenReturn(MetaDataInstanceFactory.createJobExecution());
+    when(exportJobService.execute()).thenReturn(Try.success(true));
     await().atMost(Duration.ofSeconds(10))
             .untilAsserted(() -> verify(exportJobService, atLeast(2)).execute());
   }
