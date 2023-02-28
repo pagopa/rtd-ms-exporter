@@ -29,9 +29,6 @@ import java.security.NoSuchAlgorithmException;
 @Configuration
 public class AppConfiguration {
 
-  private static final String ACQUIRER_GENERATED_FILE = "acquirer-cards.csv";
-  private static final String ACQUIRER_ZIP_FILE = "acquirer-cards.zip";
-
   @Bean
   ExportJobService exportJobService(
           ExportDatabaseStep exportDatabaseStep,

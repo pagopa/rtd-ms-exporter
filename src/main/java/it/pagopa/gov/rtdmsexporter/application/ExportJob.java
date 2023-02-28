@@ -20,13 +20,14 @@ public class ExportJob {
     this.acquirerFileStep = acquirerFileStep;
   }
 
-  Try<Boolean> run() {
+  public Try<Boolean> run() {
     return Try.of(() -> Flowable.just(exportDatabaseStep.execute())
-            .flatMap(it -> it.fold(error -> Flowable.error(error.getCause()), Flowable::just))
+            .flatMap(it -> it.fold(error -> Flowable.error(error), Flowable::just))
             .doOnEach(it -> log.info("Exported {} records, zipping it", it.getValue()))
             .map(it -> zipStep.execute())
             .takeWhile(it -> it)
             .map(it -> acquirerFileStep.execute())
+            .takeWhile(it -> it)
             .count()
             .blockingGet() == 1
     );

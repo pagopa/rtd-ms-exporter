@@ -3,11 +3,11 @@ package it.pagopa.gov.rtdmsexporter.configuration;
 import io.reactivex.rxjava3.core.Flowable;
 import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.domain.ChunkWriter;
-import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.MongoPagedCardReader;
 import it.pagopa.gov.rtdmsexporter.infrastructure.ChunkBufferedWriter;
 import it.pagopa.gov.rtdmsexporter.domain.ExportDatabaseStep;
 import it.pagopa.gov.rtdmsexporter.domain.PagedCardReader;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
+import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.MongoPagedCardReaderBuilder;
 import it.pagopa.gov.rtdmsexporter.infrastructure.step.ExportToFileStep;
 import it.pagopa.gov.rtdmsexporter.infrastructure.step.SaveAcquirerFileStep;
 import it.pagopa.gov.rtdmsexporter.infrastructure.step.ZipStep;
@@ -20,7 +20,6 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -30,7 +29,7 @@ import java.util.stream.Stream;
 public class ExportJobModule {
 
   private static final String COLLECTION_NAME = "enrolled_payment_instrument";
-  private static final String ACQUIRER_GENERATED_FILE = "acquirer-cards.csv";
+  public static final String ACQUIRER_GENERATED_FILE = "acquirer-cards.csv";
   private static final String ACQUIRER_ZIP_FILE = "acquirer-cards.zip";
 
   private final int readChunkSize;
@@ -98,13 +97,13 @@ public class ExportJobModule {
     final var query = new Query();
     query.fields().include("hashPan", "hashPanChildren", "par", "exportConfirmed");
     query.addCriteria(Criteria.where("state").is("NOT_ENROLLED"));
-    return new MongoPagedCardReader(
-            mongoTemplate,
-            COLLECTION_NAME,
-            query,
-            "hashPan",
-            Sort.Direction.ASC,
-            readChunkSize
-    );
+    return new MongoPagedCardReaderBuilder()
+            .setMongoTemplate(mongoTemplate)
+            .setCollectionName(COLLECTION_NAME)
+            .setBaseQuery(query)
+            .setKeyName("hashPan")
+            .setSortDirection(Sort.Direction.ASC)
+            .setPageSize(readChunkSize)
+            .build();
   }
 }

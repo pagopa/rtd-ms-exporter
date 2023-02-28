@@ -1,7 +1,9 @@
-package it.pagopa.gov.rtdmsexporter.batch;
+package it.pagopa.gov.rtdmsexporter.infrastructure;
 
 import com.github.tonivade.purefun.type.Try;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
+import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.MongoPagedCardReader;
+import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.MongoPagedCardReaderBuilder;
 import it.pagopa.gov.rtdmsexporter.utils.HashStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,21 +50,20 @@ class KeyPaginatedMongoReaderTest {
   private MongoTemplate mongoTemplate;
 
   private MongoTemplate mongoTemplateSpy;
-  private KeyPaginatedMongoReader<CardEntity> paginatedMongoReader;
+  private MongoPagedCardReader paginatedMongoReader;
 
   @BeforeEach
   void setup() {
     mongoTemplate.indexOps("cards")
             .ensureIndex(new Index().on("hashPan", Sort.Direction.ASC).unique());
     mongoTemplateSpy = Mockito.spy(mongoTemplate);
-    paginatedMongoReader = new KeyPaginatedMongoReaderBuilder<CardEntity>()
+    paginatedMongoReader = new MongoPagedCardReaderBuilder()
             .setMongoTemplate(mongoTemplateSpy)
             .setKeyName("hashPan")
             .setCollectionName("cards")
             .setSortDirection(Sort.Direction.ASC)
-            .setType(CardEntity.class)
             .setPageSize(10)
-            .setQuery(new Query())
+            .setBaseQuery(new Query())
             .build();
   }
 

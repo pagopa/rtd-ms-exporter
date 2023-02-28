@@ -24,7 +24,7 @@ public class MongoPagedCardReader implements PagedCardReader {
   private String startingNextKey;
   private boolean hasNextPage;
 
-  public MongoPagedCardReader(MongoTemplate mongoTemplate, String collectionName, Query baseQuery, String keyName, Sort.Direction sortDirection, int pageSize) {
+  MongoPagedCardReader(MongoTemplate mongoTemplate, String collectionName, Query baseQuery, String keyName, Sort.Direction sortDirection, int pageSize) {
     this.mongoTemplate = mongoTemplate;
     this.collectionName = collectionName;
     this.baseQuery = baseQuery;

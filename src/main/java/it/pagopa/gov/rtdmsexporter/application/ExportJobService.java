@@ -1,5 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.application;
 
+import com.github.tonivade.purefun.type.Try;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StopWatch;
 
@@ -12,14 +13,14 @@ public class ExportJobService {
     this.exportJob = exportJob;
   }
 
-  public boolean execute() throws Exception {
+  public Try<Boolean> execute() throws Exception {
     log.info("Export job started");
     final var stopWatch = new StopWatch();
     stopWatch.start();
     final var completed = exportJob.run();
     stopWatch.stop();
     log.info("Export job ends at {}", stopWatch.getTotalTimeMillis());
-    return completed.isSuccess();
+    return completed;
   }
 
 }
