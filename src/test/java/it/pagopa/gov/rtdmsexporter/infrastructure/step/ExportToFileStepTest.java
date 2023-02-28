@@ -65,10 +65,11 @@ class ExportToFileStepTest {
     assertThat(exportToFileStep.execute()).isNotEmpty();
 
     final var written = Files.readAllLines(Path.of(ACQUIRER_GENERATED_FILE));
-    assertThat(written).hasSameElementsAs(
-            cards.stream()
-                    .flatMap(it -> Stream.concat(Stream.of(it.getHashPan()), it.getHashPanChildren().stream()))
-                    .collect(Collectors.toList())
-    );
+    final var expectedEntries = cards.stream()
+            .flatMap(it -> Stream.concat(Stream.of(it.getHashPan()), it.getHashPanChildren().stream()))
+            .toList();
+    System.out.println("Expected entries " + expectedEntries.size());
+    System.out.println("Written entries " + written.size());
+    assertThat(written).hasSameElementsAs(expectedEntries);
   }
 }
