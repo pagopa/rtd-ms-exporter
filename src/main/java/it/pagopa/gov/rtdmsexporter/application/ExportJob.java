@@ -6,7 +6,6 @@ import it.pagopa.gov.rtdmsexporter.domain.ExportDatabaseStep;
 import it.pagopa.gov.rtdmsexporter.infrastructure.step.SaveAcquirerFileStep;
 import it.pagopa.gov.rtdmsexporter.infrastructure.step.ZipStep;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StopWatch;
 
 @Slf4j
 public class ExportJob {
@@ -22,16 +21,12 @@ public class ExportJob {
   }
 
   public Try<Boolean> run() {
-    final var stopWatch = new StopWatch();
-    stopWatch.start();
     return Try.of(() -> Flowable.just(exportDatabaseStep.execute())
             .flatMap(it -> it.fold(Flowable::error, Flowable::just))
-            .doOnEach(it -> {
-              stopWatch.stop();
-              log.info("Export {} records in {} ms, zipping it", it.getValue(), stopWatch.getTotalTimeMillis());
-            })
+            .doOnNext(it -> log.info("Zipping"))
             .map(it -> zipStep.execute())
             .takeWhile(it -> it)
+            .doOnNext(it -> log.info("Uploading"))
             .map(it -> acquirerFileStep.execute())
             .takeWhile(it -> it)
             .count()

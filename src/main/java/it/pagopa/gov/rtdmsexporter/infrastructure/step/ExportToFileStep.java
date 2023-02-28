@@ -7,12 +7,15 @@ import io.vavr.control.Try;
 import it.pagopa.gov.rtdmsexporter.domain.ChunkWriter;
 import it.pagopa.gov.rtdmsexporter.domain.ExportDatabaseStep;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.StopWatch;
 
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class ExportToFileStep implements ExportDatabaseStep {
 
   private final Flowable<List<CardEntity>> source;
@@ -37,6 +40,8 @@ public class ExportToFileStep implements ExportDatabaseStep {
 
   @Override
   public Try<Long> execute() {
+    final var stopWatch = new StopWatch();
+    stopWatch.start();
     return Try.of(() -> source.subscribeOn(scheduler)
             .flatMap(this::processToFlowable)
             .observeOn(scheduler)
@@ -46,6 +51,10 @@ public class ExportToFileStep implements ExportDatabaseStep {
             .collect(Collectors.summingLong(it -> it.getOrElse(0L)))
             .doOnSubscribe(disposable -> chunkWriter.open())
             .doOnTerminate(chunkWriter::close)
+            .doOnSuccess(it -> {
+              stopWatch.stop();
+              log.info("Export {} records in {} ms", it, stopWatch.getTotalTimeMillis());
+            })
             .blockingGet()
     );
   }
