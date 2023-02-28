@@ -62,14 +62,13 @@ class ExportToFileStepTest {
     when(mongoTemplate.find(any(Query.class), eq(CardEntity.class), anyString())).thenReturn(cards);
 
     // Run the job and check the result
-    assertThat(exportToFileStep.execute()).isNotEmpty();
+    assertThat(exportToFileStep.execute()).first().matches(it -> it > 0);
 
     final var written = Files.readAllLines(Path.of(ACQUIRER_GENERATED_FILE));
     final var expectedEntries = cards.stream()
             .flatMap(it -> Stream.concat(Stream.of(it.getHashPan()), it.getHashPanChildren().stream()))
             .toList();
-    System.out.println("Expected entries " + expectedEntries.size());
-    System.out.println("Written entries " + written.size());
+    assertThat(written).isNotEmpty();
     assertThat(written).hasSameElementsAs(expectedEntries);
   }
 }

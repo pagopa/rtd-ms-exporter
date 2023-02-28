@@ -29,8 +29,8 @@ import java.util.stream.Stream;
 public class ExportJobModule {
 
   private static final String COLLECTION_NAME = "enrolled_payment_instrument";
-  public static final String ACQUIRER_GENERATED_FILE = "acquirer-cards.csv";
-  private static final String ACQUIRER_ZIP_FILE = "acquirer-cards.zip";
+  public static final String ACQUIRER_GENERATED_FILE = "./acquirer-cards.csv";
+  private static final String ACQUIRER_ZIP_FILE = "./acquirer-cards.zip";
 
   private final int readChunkSize;
 
