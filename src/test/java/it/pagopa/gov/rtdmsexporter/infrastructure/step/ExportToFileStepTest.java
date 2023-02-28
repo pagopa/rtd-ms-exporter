@@ -46,8 +46,7 @@ class ExportToFileStepTest {
   private MongoTemplate mongoTemplate;
 
   @BeforeEach
-  void setup() throws IOException {
-    Files.deleteIfExists(Path.of(ACQUIRER_GENERATED_FILE));
+  void setup() {
   }
 
   @AfterEach

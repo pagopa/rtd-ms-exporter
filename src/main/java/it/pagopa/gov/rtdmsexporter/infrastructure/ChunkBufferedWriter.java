@@ -8,6 +8,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Objects;
 
 @Slf4j
@@ -22,7 +23,9 @@ public class ChunkBufferedWriter implements ChunkWriter<String> {
   @Override
   public void open() throws IOException {
     if (Objects.isNull(writer)) {
-      writer = new BufferedWriter(new FileWriter(file));
+      Files.deleteIfExists(file.toPath());
+      Files.createFile(file.toPath());
+      writer = new BufferedWriter(new FileWriter(file, false));
     }
     log.info("File writer has been open");
   }
