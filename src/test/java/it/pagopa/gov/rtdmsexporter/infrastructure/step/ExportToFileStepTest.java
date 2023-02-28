@@ -64,7 +64,7 @@ class ExportToFileStepTest {
 
 
     // Run the job and check the result
-    assertThat(exportToFileStep.execute()).satisfies(Try::isSuccess);
+    assertThat(exportToFileStep.execute()).matches(Try::isSuccess);
 
     final var written = Files.readAllLines(Path.of(ACQUIRER_GENERATED_FILE));
     assertThat(written).hasSameElementsAs(

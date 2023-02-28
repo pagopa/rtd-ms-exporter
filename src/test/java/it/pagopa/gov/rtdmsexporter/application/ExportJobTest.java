@@ -94,7 +94,7 @@ class ExportJobTest {
   void whenZipFailThenSkipUploadAndFail() throws Exception {
     try (final var zipUtils = mockStatic(ZipUtils.class)) {
       zipUtils.when(() -> ZipUtils.zipFile(any(), any())).thenReturn(Optional.empty());
-      assertThat(exportJobService.execute()).matches(Try::isFailure);
+      assertThat(exportJobService.execute()).matches(it -> !it.getOrElseThrow());
       verify(acquirerFileRepository, times(0)).save(any());
     }
   }
@@ -102,7 +102,7 @@ class ExportJobTest {
   @Test
   void whenUploadFailThenJobFail() throws Exception {
     when(acquirerFileRepository.save(any())).thenReturn(false);
-    assertThat(exportJobService.execute()).matches(Try::isFailure);
+    assertThat(exportJobService.execute()).matches(it -> !it.getOrElseThrow());
   }
 
   @TestConfiguration
