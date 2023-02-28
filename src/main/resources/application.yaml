@@ -6,6 +6,7 @@ logging:
 exporter:
   cronExpression: ${CRON_EXPRESSION_BATCH:-}
   readChunkSize: ${READ_CHUNK_SIZE:10000}
+  corePoolSize: ${CORE_POOL_SIZE:4}
 
 blobstorage.api:
   baseUrl: ${API_BLOB_BASE_URL:https://apim.internal.dev.cstar.pagopa.it/storage/}

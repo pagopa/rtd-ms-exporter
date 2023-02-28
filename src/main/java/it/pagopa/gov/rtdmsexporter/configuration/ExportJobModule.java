@@ -33,11 +33,14 @@ public class ExportJobModule {
   private static final String ACQUIRER_ZIP_FILE = "./acquirer-cards.zip";
 
   private final int readChunkSize;
+  private final int corePoolSize;
 
   public ExportJobModule(
-          @Value("${exporter.readChunkSize:10}") int readChunkSize
+          @Value("${exporter.readChunkSize:10}") int readChunkSize,
+          @Value("${exporter.corePoolSize:4}") int corePoolSize
   ) {
     this.readChunkSize = readChunkSize;
+    this.corePoolSize = corePoolSize;
   }
 
   @Bean
@@ -51,7 +54,7 @@ public class ExportJobModule {
             flattenCardHashes,
             chunkWriter,
             readChunkSize,
-            4
+            corePoolSize
     );
   }
 
