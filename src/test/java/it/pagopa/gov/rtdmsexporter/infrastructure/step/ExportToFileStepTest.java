@@ -68,6 +68,7 @@ class ExportToFileStepTest {
     final var expectedEntries = cards.stream()
             .flatMap(it -> Stream.concat(Stream.of(it.getHashPan()), it.getHashPanChildren().stream()))
             .toList();
+    assertThat(Files.exists(Path.of(ACQUIRER_GENERATED_FILE))).isTrue();
     assertThat(written).isNotEmpty();
     assertThat(written).hasSameElementsAs(expectedEntries);
   }

@@ -43,6 +43,7 @@ public class ChunkBufferedWriter implements ChunkWriter<String> {
       }
       return Try.success(wrote);
     } catch (IOException ex) {
+      log.error("Failed to write file", ex);
       return Try.failure(ex);
     }
   }
@@ -50,8 +51,10 @@ public class ChunkBufferedWriter implements ChunkWriter<String> {
   @Override
   public void close() throws IOException {
     if (Objects.nonNull(writer)) {
+      writer.flush();
       writer.close();
+      writer = null;
+      log.info("File writer has been closed");
     }
-    log.info("File writer has been closed");
   }
 }
