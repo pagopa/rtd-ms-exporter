@@ -1,15 +1,12 @@
 package it.pagopa.gov.rtdmsexporter.infrastructure.mongo;
 
 import it.pagopa.gov.rtdmsexporter.domain.PagedCardReader;
-import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import it.pagopa.gov.rtdmsexporter.utils.PerformanceUtils;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 public class MongoPagedCardReader implements PagedCardReader {

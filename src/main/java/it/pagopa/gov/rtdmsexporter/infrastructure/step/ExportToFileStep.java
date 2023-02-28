@@ -1,6 +1,5 @@
 package it.pagopa.gov.rtdmsexporter.infrastructure.step;
 
-import com.github.tonivade.purefun.type.Either;
 import com.github.tonivade.purefun.type.Try;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Scheduler;
@@ -9,7 +8,6 @@ import it.pagopa.gov.rtdmsexporter.domain.ChunkWriter;
 import it.pagopa.gov.rtdmsexporter.domain.ExportDatabaseStep;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 
-import java.io.File;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
@@ -46,7 +44,7 @@ public class ExportToFileStep implements ExportDatabaseStep {
             .takeWhile(Try::isSuccess)
             .count()
             .doOnSubscribe(disposable -> chunkWriter.open())
-            .doFinally(() -> chunkWriter.close())
+            .doFinally(chunkWriter::close)
             .blockingGet()
     );
   }

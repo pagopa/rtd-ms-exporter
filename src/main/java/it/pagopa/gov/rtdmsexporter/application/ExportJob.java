@@ -22,7 +22,7 @@ public class ExportJob {
 
   public Try<Boolean> run() {
     return Try.of(() -> Flowable.just(exportDatabaseStep.execute())
-            .flatMap(it -> it.fold(error -> Flowable.error(error), Flowable::just))
+            .flatMap(it -> it.fold(Flowable::error, Flowable::just))
             .doOnEach(it -> log.info("Exported {} records, zipping it", it.getValue()))
             .map(it -> zipStep.execute())
             .takeWhile(it -> it)

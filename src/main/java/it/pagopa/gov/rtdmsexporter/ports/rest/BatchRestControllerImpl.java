@@ -28,7 +28,6 @@ public class BatchRestControllerImpl implements BatchRestController {
       try {
         exportJobService.execute();
       } catch (Exception e) {
-        e.printStackTrace();
         log.error("Error during job execution {}", e.getMessage());
       }
     });
