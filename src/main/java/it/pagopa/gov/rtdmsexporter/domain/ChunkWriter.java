@@ -1,7 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.domain;
 
-import com.github.tonivade.purefun.type.Try;
-
+import io.vavr.control.Try;
 import java.io.IOException;
 
 public interface ChunkWriter<T> {

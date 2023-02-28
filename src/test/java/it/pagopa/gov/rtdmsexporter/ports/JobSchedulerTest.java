@@ -1,6 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.ports;
 
-import com.github.tonivade.purefun.type.Try;
+import io.vavr.control.Try;
 import it.pagopa.gov.rtdmsexporter.application.ExportJobService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

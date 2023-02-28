@@ -1,6 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.domain;
 
-import com.github.tonivade.purefun.type.Try;
+import io.vavr.control.Try;
 
 public interface ExportDatabaseStep {
   Try<Long> execute();

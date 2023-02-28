@@ -1,6 +1,5 @@
 package it.pagopa.gov.rtdmsexporter.infrastructure.step;
 
-import com.github.tonivade.purefun.type.Try;
 import it.pagopa.gov.rtdmsexporter.configuration.AppConfiguration;
 import it.pagopa.gov.rtdmsexporter.configuration.ExportJobModule;
 import it.pagopa.gov.rtdmsexporter.configuration.MockMongoConfiguration;
@@ -64,7 +63,7 @@ class ExportToFileStepTest {
     when(mongoTemplate.find(any(Query.class), eq(CardEntity.class), anyString())).thenReturn(cards);
 
     // Run the job and check the result
-    assertThat(exportToFileStep.execute()).matches(Try::isSuccess);
+    assertThat(exportToFileStep.execute()).isNotEmpty();
 
     final var written = Files.readAllLines(Path.of(ACQUIRER_GENERATED_FILE));
     assertThat(written).hasSameElementsAs(

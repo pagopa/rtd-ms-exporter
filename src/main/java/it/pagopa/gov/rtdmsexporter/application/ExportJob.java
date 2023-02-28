@@ -1,7 +1,7 @@
 package it.pagopa.gov.rtdmsexporter.application;
 
-import com.github.tonivade.purefun.type.Try;
 import io.reactivex.rxjava3.core.Flowable;
+import io.vavr.control.Try;
 import it.pagopa.gov.rtdmsexporter.domain.ExportDatabaseStep;
 import it.pagopa.gov.rtdmsexporter.infrastructure.step.SaveAcquirerFileStep;
 import it.pagopa.gov.rtdmsexporter.infrastructure.step.ZipStep;

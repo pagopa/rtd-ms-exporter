@@ -29,7 +29,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.apache.httpcomponents:httpclient:4.5.14'
-    implementation 'com.github.tonivade:purefun-core:4.0'
+    // fp library -> docs: https://docs.vavr.io/#_introduction
+    implementation 'io.vavr:vavr:0.10.4'
 
     implementation 'io.reactivex.rxjava3:rxjava:3.1.6'
 

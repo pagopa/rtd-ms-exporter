@@ -1,6 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.infrastructure;
 
-import com.github.tonivade.purefun.type.Try;
+import io.vavr.control.Try;
 import it.pagopa.gov.rtdmsexporter.domain.ChunkWriter;
 import lombok.extern.slf4j.Slf4j;
 

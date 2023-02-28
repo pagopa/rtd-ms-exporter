@@ -1,9 +1,9 @@
 package it.pagopa.gov.rtdmsexporter.infrastructure.step;
 
-import com.github.tonivade.purefun.type.Try;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.vavr.control.Try;
 import it.pagopa.gov.rtdmsexporter.domain.ChunkWriter;
 import it.pagopa.gov.rtdmsexporter.domain.ExportDatabaseStep;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;

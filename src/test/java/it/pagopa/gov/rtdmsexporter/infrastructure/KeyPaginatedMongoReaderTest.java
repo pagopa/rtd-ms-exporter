@@ -1,6 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.infrastructure;
 
-import com.github.tonivade.purefun.type.Try;
+import io.vavr.control.Try;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.MongoPagedCardReader;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.MongoPagedCardReaderBuilder;
@@ -25,7 +25,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -81,7 +80,7 @@ class KeyPaginatedMongoReaderTest {
             .forEach(it -> mongoTemplate.save(it, "cards"));
 
     final var reads = Stream.generate(() -> Try.of(paginatedMongoReader::read))
-            .map(Try::getOrElseNull)
+            .map(Try::get)
             .takeWhile(it -> !it.isEmpty())
             .flatMap(Collection::stream)
             .collect(Collectors.toSet());
@@ -96,7 +95,7 @@ class KeyPaginatedMongoReaderTest {
             .forEach(it -> mongoTemplate.save(it, "cards"));
 
     final var reads = Stream.generate(() -> Try.of(paginatedMongoReader::read))
-            .map(Try::getOrElseNull)
+            .map(Try::get)
             .takeWhile(it -> !it.isEmpty())
             .flatMap(Collection::stream)
             .collect(Collectors.toSet());
@@ -112,7 +111,7 @@ class KeyPaginatedMongoReaderTest {
             .forEach(it -> mongoTemplate.save(it, "cards"));
 
     final var readItems = Stream.generate(() -> Try.of(paginatedMongoReader::read))
-            .map(Try::getOrElseNull)
+            .map(Try::get)
             .takeWhile(it -> !it.isEmpty())
             .flatMap(Collection::stream)
             .count();

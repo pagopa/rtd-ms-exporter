@@ -1,6 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.application;
 
-import com.github.tonivade.purefun.type.Try;
+import io.vavr.control.Try;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.StopWatch;
 
