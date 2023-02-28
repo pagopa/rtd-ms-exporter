@@ -33,5 +33,3 @@ spring:
     mongodb:
       uri: ${MONGODB_CONNECTION_URI:mongodb://localhost:27017}
       database: ${MONGODB_NAME:rtd}
-server:
-  port: 8081
