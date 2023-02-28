@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -106,8 +107,10 @@ class ExportJobTest {
 
   @TestConfiguration
   static class Config {
-    @MockBean
-    private AcquirerFileRepository acquirerFileRepository;
+    @Bean
+    AcquirerFileRepository acquirerFileRepository() {
+      return mock(AcquirerFileRepository.class);
+    }
   }
 }
 
