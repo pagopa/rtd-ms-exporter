@@ -44,7 +44,7 @@ public class ExportToFileStep implements ExportDatabaseStep {
             .takeWhile(Try::isSuccess)
             .count()
             .doOnSubscribe(disposable -> chunkWriter.open())
-            .doFinally(chunkWriter::close)
+            .doOnTerminate(chunkWriter::close)
             .blockingGet()
     );
   }

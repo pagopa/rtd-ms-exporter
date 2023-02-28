@@ -77,7 +77,7 @@ class ExportJobTest {
   void whenCardAvailableThenCompleteJob() throws Exception {
     final var captor = ArgumentCaptor.forClass(AcquirerFile.class);
     when(acquirerFileRepository.save(any())).thenReturn(true);
-    assertThat(exportJobService.execute()).isInstanceOfSatisfying(Try.class, Try::isSuccess);
+    assertThat(exportJobService.execute()).contains(true);
     verify(acquirerFileRepository, times(1)).save(captor.capture());
     assertThat(captor.getValue().file().getPath()).contains(".zip");
   }
@@ -85,7 +85,7 @@ class ExportJobTest {
   @Test
   void whenExportToFileFailThenSkipUploadAndJobFail() throws Exception {
     when(mongoTemplate.find(any(Query.class), eq(CardEntity.class), anyString())).thenThrow(new MongoException("Error"));
-    assertThat(exportJobService.execute()).isInstanceOfSatisfying(Try.class, Try::isFailure);
+    assertThat(exportJobService.execute()).isEmpty();
     verify(acquirerFileRepository, times(0)).save(any());
   }
 

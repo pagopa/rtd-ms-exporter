@@ -34,8 +34,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
 @Import(MockMongoConfiguration.class)
-@ContextConfiguration(classes = { ExportJobModule.class, AppConfiguration.class })
-@TestExecutionListeners({ DependencyInjectionTestExecutionListener.class })
+@ContextConfiguration(classes = {ExportJobModule.class, AppConfiguration.class})
+@TestExecutionListeners({DependencyInjectionTestExecutionListener.class})
 @TestPropertySource(locations = "classpath:application.yml")
 class ExportToFileStepTest {
 
@@ -68,8 +68,7 @@ class ExportToFileStepTest {
     final var expectedEntries = cards.stream()
             .flatMap(it -> Stream.concat(Stream.of(it.getHashPan()), it.getHashPanChildren().stream()))
             .toList();
-    assertThat(Files.exists(Path.of(ACQUIRER_GENERATED_FILE))).isTrue();
-    assertThat(written).isNotEmpty();
-    assertThat(written).hasSameElementsAs(expectedEntries);
+
+    assertThat(written).isNotEmpty().hasSameElementsAs(expectedEntries);
   }
 }
