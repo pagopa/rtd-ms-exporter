@@ -11,6 +11,7 @@ import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ExportToFileStep implements ExportDatabaseStep {
 
@@ -42,7 +43,7 @@ public class ExportToFileStep implements ExportDatabaseStep {
             .buffer(bufferBeforeWrite)
             .map(chunkWriter::writeChunk)
             .takeWhile(Try::isSuccess)
-            .count()
+            .collect(Collectors.summingLong(it -> it.getOrElse(0L)))
             .doOnSubscribe(disposable -> chunkWriter.open())
             .doOnTerminate(chunkWriter::close)
             .blockingGet()

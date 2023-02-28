@@ -19,7 +19,7 @@ public class ExportJobService {
     stopWatch.start();
     final var completed = exportJob.run();
     stopWatch.stop();
-    log.info("Export job ends at {}", stopWatch.getTotalTimeMillis());
+    log.info("Export job ends in {} ms", stopWatch.getTotalTimeMillis());
     return completed;
   }
 
