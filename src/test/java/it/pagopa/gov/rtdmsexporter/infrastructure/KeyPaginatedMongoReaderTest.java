@@ -23,6 +23,7 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -81,7 +82,8 @@ class KeyPaginatedMongoReaderTest {
 
     final var reads = Stream.generate(() -> Try.of(paginatedMongoReader::read))
             .map(Try::getOrElseNull)
-            .takeWhile(Objects::nonNull)
+            .takeWhile(it -> !it.isEmpty())
+            .flatMap(Collection::stream)
             .collect(Collectors.toSet());
 
     assertThat(reads).hasSize(25);
@@ -95,7 +97,8 @@ class KeyPaginatedMongoReaderTest {
 
     final var reads = Stream.generate(() -> Try.of(paginatedMongoReader::read))
             .map(Try::getOrElseNull)
-            .takeWhile(Objects::nonNull)
+            .takeWhile(it -> !it.isEmpty())
+            .flatMap(Collection::stream)
             .collect(Collectors.toSet());
 
     assertThat(reads).hasSize(10);
@@ -110,7 +113,8 @@ class KeyPaginatedMongoReaderTest {
 
     final var readItems = Stream.generate(() -> Try.of(paginatedMongoReader::read))
             .map(Try::getOrElseNull)
-            .takeWhile(Objects::nonNull)
+            .takeWhile(it -> !it.isEmpty())
+            .flatMap(Collection::stream)
             .count();
 
     assertThat(readItems).isEqualTo(25);
