@@ -47,7 +47,8 @@ class ExportToFileStepTest {
   private MongoTemplate mongoTemplate;
 
   @BeforeEach
-  void setup() {
+  void setup() throws IOException {
+    Files.deleteIfExists(Path.of(ACQUIRER_GENERATED_FILE));
   }
 
   @AfterEach
@@ -61,7 +62,6 @@ class ExportToFileStepTest {
             .map(it -> new CardEntity(it, HashStream.of(2, it).collect(Collectors.toList()), "", false))
             .collect(Collectors.toList());
     when(mongoTemplate.find(any(Query.class), eq(CardEntity.class), anyString())).thenReturn(cards);
-
 
     // Run the job and check the result
     assertThat(exportToFileStep.execute()).matches(Try::isSuccess);
