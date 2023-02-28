@@ -96,7 +96,7 @@ public class ExportJobModule {
   public PagedCardReader cardReader(MongoTemplate mongoTemplate) {
     final var query = new Query();
     query.fields().include("hashPan", "hashPanChildren", "par", "exportConfirmed");
-    query.addCriteria(Criteria.where("state").is("NOT_ENROLLED"));
+    query.addCriteria(Criteria.where("state").is("READY"));
     return new MongoPagedCardReaderBuilder()
             .setMongoTemplate(mongoTemplate)
             .setCollectionName(COLLECTION_NAME)
