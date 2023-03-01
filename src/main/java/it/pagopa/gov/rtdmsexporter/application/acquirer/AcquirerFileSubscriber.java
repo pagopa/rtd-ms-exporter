@@ -42,21 +42,16 @@ public class AcquirerFileSubscriber implements Function<Flowable<List<CardEntity
             .map(chunkWriter::writeChunk)
             .takeWhile(Try::isSuccess)
             .collect(Collectors.summingLong(it -> it.getOrElse(0L)))
-            .doOnTerminate(chunkWriter::close)
             .doOnSubscribe(disposable -> {
               stopWatch.start();
               chunkWriter.open();
             })
-            .toCompletionStage()
-            .toCompletableFuture()
-            .whenComplete((count, error) -> {
+            .doOnTerminate(chunkWriter::close)
+            .doOnSuccess(count -> {
               stopWatch.stop();
-              if (Objects.isNull(error)) {
-                log.info("Read and write to file {} in {} ms", count, stopWatch.getTotalTimeMillis());
-              } else {
-                log.error("Error during write to acquirer file", error);
-              }
-            });
+              log.info("Read and write to file {} in {} ms", count, stopWatch.getTotalTimeMillis());
+            })
+            .toFuture();
   }
 
   private Flowable<String> processToFlowable(List<CardEntity> cards) {
