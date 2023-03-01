@@ -1,5 +1,6 @@
 package it.pagopa.gov.rtdmsexporter.infrastructure.step;
 
+import it.pagopa.gov.rtdmsexporter.application.PagedDatabaseExportStep;
 import it.pagopa.gov.rtdmsexporter.configuration.AppConfiguration;
 import it.pagopa.gov.rtdmsexporter.configuration.ExportJobModule;
 import it.pagopa.gov.rtdmsexporter.configuration.MockMongoConfiguration;
@@ -37,10 +38,10 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = {ExportJobModule.class, AppConfiguration.class})
 @TestExecutionListeners({DependencyInjectionTestExecutionListener.class})
 @TestPropertySource(locations = "classpath:application.yml")
-class ExportToFileStepTest {
+class PagedExportToFileStepTest {
 
   @Autowired
-  private ExportToFileStep exportToFileStep;
+  private PagedDatabaseExportStep exportToFileStep;
 
   @Autowired
   private MongoTemplate mongoTemplate;

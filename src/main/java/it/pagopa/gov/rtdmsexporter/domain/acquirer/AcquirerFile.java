@@ -1,4 +1,4 @@
-package it.pagopa.gov.rtdmsexporter.domain;
+package it.pagopa.gov.rtdmsexporter.domain.acquirer;
 
 import java.io.File;
 

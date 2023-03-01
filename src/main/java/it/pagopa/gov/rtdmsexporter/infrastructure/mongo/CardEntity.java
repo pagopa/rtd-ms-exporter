@@ -26,8 +26,8 @@ public class CardEntity implements KeyPageableEntity {
   @Field(name = "par")
   private String par;
 
-  @Field(name = "exportConfirmed")
-  private boolean exportConfirmed = false;
+  @Field(name = "exported")
+  private boolean exported = false;
 
   @Override
   public String getKey() {

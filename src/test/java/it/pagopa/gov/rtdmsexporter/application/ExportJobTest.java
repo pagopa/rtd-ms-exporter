@@ -1,12 +1,11 @@
 package it.pagopa.gov.rtdmsexporter.application;
 
 import com.mongodb.MongoException;
-import io.vavr.control.Try;
 import it.pagopa.gov.rtdmsexporter.configuration.AppConfiguration;
 import it.pagopa.gov.rtdmsexporter.configuration.ExportJobModule;
 import it.pagopa.gov.rtdmsexporter.configuration.MockMongoConfiguration;
-import it.pagopa.gov.rtdmsexporter.domain.AcquirerFile;
-import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
+import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFile;
+import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.infrastructure.ZipUtils;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import it.pagopa.gov.rtdmsexporter.utils.HashStream;

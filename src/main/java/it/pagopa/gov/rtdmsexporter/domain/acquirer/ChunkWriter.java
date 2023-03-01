@@ -1,4 +1,4 @@
-package it.pagopa.gov.rtdmsexporter.domain;
+package it.pagopa.gov.rtdmsexporter.domain.acquirer;
 
 import io.vavr.control.Try;
 import java.io.IOException;

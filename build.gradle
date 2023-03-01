@@ -13,6 +13,9 @@ group = 'it.pagopa.gov'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '17'
 
+ext {
+    set('springCloudVersion', "2022.0.1")
+}
 
 configurations {
     compileOnly {
@@ -28,10 +31,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    //implementation 'org.springframework.cloud:spring-cloud-stream'
+
     implementation 'org.apache.httpcomponents:httpclient:4.5.14'
     // fp library -> docs: https://docs.vavr.io/#_introduction
     implementation 'io.vavr:vavr:0.10.4'
-
     implementation 'io.reactivex.rxjava3:rxjava:3.1.6'
 
     compileOnly 'org.projectlombok:lombok'
@@ -39,11 +43,18 @@ dependencies {
 
     testImplementation 'org.mockito:mockito-inline:5.1.1'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.cloud:spring-cloud-stream-test-binder'
     testImplementation 'org.awaitility:awaitility:4.2.0'
     // test containers
     testImplementation "org.testcontainers:testcontainers:1.17.6"
     testImplementation "org.testcontainers:junit-jupiter:1.17.6"
     testImplementation "org.testcontainers:mongodb:1.17.6"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
 }
 
 jacocoTestReport {

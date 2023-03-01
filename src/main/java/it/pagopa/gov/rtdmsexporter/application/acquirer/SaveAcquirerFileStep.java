@@ -1,8 +1,8 @@
-package it.pagopa.gov.rtdmsexporter.infrastructure.step;
+package it.pagopa.gov.rtdmsexporter.application.acquirer;
 
 import io.vavr.control.Try;
-import it.pagopa.gov.rtdmsexporter.domain.AcquirerFile;
-import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
+import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFile;
+import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFileRepository;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
