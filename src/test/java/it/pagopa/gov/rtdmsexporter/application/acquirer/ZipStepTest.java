@@ -1,4 +1,4 @@
-package it.pagopa.gov.rtdmsexporter.infrastructure.step;
+package it.pagopa.gov.rtdmsexporter.application.acquirer;
 
 import it.pagopa.gov.rtdmsexporter.application.acquirer.ZipStep;
 import it.pagopa.gov.rtdmsexporter.infrastructure.ZipUtils;

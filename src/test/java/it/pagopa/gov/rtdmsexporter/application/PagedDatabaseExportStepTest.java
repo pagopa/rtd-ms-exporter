@@ -1,6 +1,6 @@
-package it.pagopa.gov.rtdmsexporter.infrastructure.step;
+package it.pagopa.gov.rtdmsexporter.application;
 
-import it.pagopa.gov.rtdmsexporter.application.PagedDatabaseExportStep;
+import com.mongodb.MongoException;
 import it.pagopa.gov.rtdmsexporter.configuration.AppConfiguration;
 import it.pagopa.gov.rtdmsexporter.configuration.ExportJobModule;
 import it.pagopa.gov.rtdmsexporter.configuration.MockMongoConfiguration;
@@ -29,7 +29,9 @@ import java.util.stream.Stream;
 
 import static it.pagopa.gov.rtdmsexporter.configuration.ExportJobModule.ACQUIRER_GENERATED_FILE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -38,10 +40,10 @@ import static org.mockito.Mockito.when;
 @ContextConfiguration(classes = {ExportJobModule.class, AppConfiguration.class})
 @TestExecutionListeners({DependencyInjectionTestExecutionListener.class})
 @TestPropertySource(locations = "classpath:application.yml")
-class PagedExportToFileStepTest {
+class PagedDatabaseExportStepTest {
 
   @Autowired
-  private PagedDatabaseExportStep exportToFileStep;
+  private PagedDatabaseExportStep pagedDatabaseExportStep;
 
   @Autowired
   private MongoTemplate mongoTemplate;
@@ -53,6 +55,7 @@ class PagedExportToFileStepTest {
   @AfterEach
   public void cleanUp() throws IOException {
     Files.deleteIfExists(Path.of(ACQUIRER_GENERATED_FILE));
+    reset(mongoTemplate);
   }
 
   @Test
@@ -63,7 +66,7 @@ class PagedExportToFileStepTest {
     when(mongoTemplate.find(any(Query.class), eq(CardEntity.class), anyString())).thenReturn(cards);
 
     // Run the job and check the result
-    assertThat(exportToFileStep.execute()).first().matches(it -> it > 0);
+    assertThat(pagedDatabaseExportStep.execute()).isTrue();
 
     final var written = Files.readAllLines(Path.of(ACQUIRER_GENERATED_FILE));
     final var expectedEntries = cards.stream()
@@ -71,5 +74,11 @@ class PagedExportToFileStepTest {
             .toList();
 
     assertThat(written).isNotEmpty().hasSameElementsAs(expectedEntries);
+  }
+
+  @Test
+  void whenMongoThrowsExceptionThenAnExceptionIsThrown() {
+    when(mongoTemplate.find(any(Query.class), eq(CardEntity.class), anyString())).thenThrow(new MongoException("Unexpected error"));
+    assertThrows(RuntimeException.class, () -> pagedDatabaseExportStep.execute());
   }
 }
