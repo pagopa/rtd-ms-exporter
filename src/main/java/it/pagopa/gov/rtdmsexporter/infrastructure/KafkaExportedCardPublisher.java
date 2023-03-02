@@ -1,6 +1,7 @@
-package it.pagopa.gov.rtdmsexporter.domain.paymentinstrument;
+package it.pagopa.gov.rtdmsexporter.infrastructure;
 
 import io.vavr.control.Try;
+import it.pagopa.gov.rtdmsexporter.domain.paymentinstrument.ExportedCardPublisher;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.messaging.support.MessageBuilder;
 

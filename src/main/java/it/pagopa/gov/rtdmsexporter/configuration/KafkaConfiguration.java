@@ -1,7 +1,7 @@
 package it.pagopa.gov.rtdmsexporter.configuration;
 
 import it.pagopa.gov.rtdmsexporter.domain.paymentinstrument.ExportedCardPublisher;
-import it.pagopa.gov.rtdmsexporter.domain.paymentinstrument.KafkaExportedCardPublisher;
+import it.pagopa.gov.rtdmsexporter.infrastructure.KafkaExportedCardPublisher;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
