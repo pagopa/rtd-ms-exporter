@@ -22,6 +22,7 @@ public class NewExportedNotifyStep {
     Flowable.fromStream(exportedCardRepository.exportedPaymentInstruments())
             .observeOn(Schedulers.single())
             .map(exportedCardPublisher::notifyExportedCard)
+            .doOnEach(item -> log.info("Send export event {}", item))
             .filter(Try::isSuccess)
             .doOnNext(item -> exportedCardRepository.remove(item.get()))
             .blockingSubscribe();

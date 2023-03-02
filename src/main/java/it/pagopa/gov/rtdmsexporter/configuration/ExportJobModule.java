@@ -11,12 +11,11 @@ import it.pagopa.gov.rtdmsexporter.application.paymentinstrument.NewExportedSubs
 import it.pagopa.gov.rtdmsexporter.domain.PagedCardReader;
 import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.domain.acquirer.ChunkWriter;
-import it.pagopa.gov.rtdmsexporter.domain.paymentinstrument.DummyExportedCardPublisher;
+import it.pagopa.gov.rtdmsexporter.domain.paymentinstrument.ExportedCardPublisher;
 import it.pagopa.gov.rtdmsexporter.domain.paymentinstrument.ExportedCardRepository;
 import it.pagopa.gov.rtdmsexporter.infrastructure.ChunkBufferedWriter;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.MongoPagedCardReaderBuilder;
-import it.pagopa.gov.rtdmsexporter.infrastructure.paymentinstrument.MemoryExportedCardRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -77,8 +76,14 @@ public class ExportJobModule {
   }
 
   @Bean
-  NewExportedNotifyStep newExportedNotifyStep(ExportedCardRepository exportedCardRepository) {
-    return new NewExportedNotifyStep(exportedCardRepository, new DummyExportedCardPublisher());
+  NewExportedNotifyStep newExportedNotifyStep(
+          ExportedCardRepository exportedCardRepository,
+          ExportedCardPublisher exportedCardPublisher
+  ) {
+    return new NewExportedNotifyStep(
+            exportedCardRepository,
+            exportedCardPublisher
+    );
   }
 
   @Bean
@@ -92,9 +97,10 @@ public class ExportJobModule {
 
   @Bean
   NewExportedSubscriber newExportedSubscriber(
-          Scheduler rxScheduler
+          Scheduler rxScheduler,
+          ExportedCardRepository exportedCardRepository
   ) {
-    return new NewExportedSubscriber(rxScheduler, new MemoryExportedCardRepository());
+    return new NewExportedSubscriber(rxScheduler, exportedCardRepository);
   }
 
   @Bean
@@ -114,7 +120,7 @@ public class ExportJobModule {
   public PagedCardReader cardReader(MongoTemplate mongoTemplate) {
     final var query = new Query();
     query.fields().include("hashPan", "hashPanChildren", "par", "exportConfirmed");
-    query.addCriteria(Criteria.where("state").is("NOT_ENROLLED"));
+    query.addCriteria(Criteria.where("state").is("READY"));
     return new MongoPagedCardReaderBuilder()
             .setMongoTemplate(mongoTemplate)
             .setCollectionName(COLLECTION_NAME)

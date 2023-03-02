@@ -36,6 +36,7 @@ public class ExportJob {
             .doOnNext(it -> log.info("Uploading"))
             .map(it -> acquirerFileStep.execute())
             .takeWhile(it -> it)
+            .doOnNext(it -> log.info("Publishing events"))
             .map(it -> exportedNotifyStep.execute())
             .takeWhile(it -> it)
             .count()

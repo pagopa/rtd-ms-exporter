@@ -27,10 +27,35 @@ management:
       export:
         enabled: false
 spring:
-  batch:
-    jdbc:
-      initialize-schema: always
   data:
     mongodb:
       uri: ${MONGODB_CONNECTION_URI:mongodb://localhost:27017}
       database: ${MONGODB_NAME:rtd}
+
+  cloud:
+    stream:
+      function.autodetect: false
+      kafka:
+        binder:
+          configuration:
+            security.protocol: SASL_SSL
+            sasl.mechanism: PLAIN
+      binders:
+        kafka-split-by-pi-binder:
+          type: kafka
+          environment.spring.cloud.stream.kafka:
+            brokers: ${RTD_SPLIT_BROKER:localhost:29095}
+            requiredAcks: all
+            configuration:
+              sasl.jaas.config: ${KAFKA_RTD_SPLIT_SASL_JAAS_CONFIG}
+
+      bindings:
+        exporterToPim-out-0:
+          destination: ${KAFKA_RTD_SPLIT_TOPIC:rtd-split-by-pi}
+          content-type: application/json
+          binder: kafka-split-by-pi-binder
+          producer:
+            partitionKeyExpression: headers.partitionKey
+            partitionCount: ${KAFKA_RTD_SPLIT_PARTITION_COUNT:1}
+            autoStartup: false
+            auto-startup: false
