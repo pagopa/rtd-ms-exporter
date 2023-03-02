@@ -1,16 +1,19 @@
 package it.pagopa.gov.rtdmsexporter.configuration;
 
-import io.reactivex.rxjava3.core.Flowable;
-import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
-import it.pagopa.gov.rtdmsexporter.domain.ChunkWriter;
-import it.pagopa.gov.rtdmsexporter.infrastructure.ChunkBufferedWriter;
-import it.pagopa.gov.rtdmsexporter.domain.ExportDatabaseStep;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import it.pagopa.gov.rtdmsexporter.application.PagedDatabaseExportStep;
+import it.pagopa.gov.rtdmsexporter.application.acquirer.AcquirerFileSubscriber;
+import it.pagopa.gov.rtdmsexporter.application.acquirer.SaveAcquirerFileStep;
+import it.pagopa.gov.rtdmsexporter.application.acquirer.ZipStep;
+import it.pagopa.gov.rtdmsexporter.application.paymentinstrument.NewExportedSubscriber;
 import it.pagopa.gov.rtdmsexporter.domain.PagedCardReader;
+import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFileRepository;
+import it.pagopa.gov.rtdmsexporter.domain.acquirer.ChunkWriter;
+import it.pagopa.gov.rtdmsexporter.infrastructure.ChunkBufferedWriter;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.MongoPagedCardReaderBuilder;
-import it.pagopa.gov.rtdmsexporter.infrastructure.step.ExportToFileStep;
-import it.pagopa.gov.rtdmsexporter.infrastructure.step.SaveAcquirerFileStep;
-import it.pagopa.gov.rtdmsexporter.infrastructure.step.ZipStep;
+import it.pagopa.gov.rtdmsexporter.infrastructure.paymentinstrument.MemoryExportedInstrumentRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +24,7 @@ import org.springframework.data.mongodb.core.query.Query;
 
 import java.io.File;
 import java.util.List;
-import java.util.Objects;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -44,17 +47,17 @@ public class ExportJobModule {
   }
 
   @Bean
-  ExportDatabaseStep exportDatabaseStep(
-          Flowable<List<CardEntity>> source,
-          Function<CardEntity, List<String>> flattenCardHashes,
-          ChunkWriter<String> chunkWriter
+  PagedDatabaseExportStep exportDatabaseStep(
+          Scheduler rxScheduler,
+          PagedCardReader pagedCardReader,
+          AcquirerFileSubscriber acquirerFileSubscriber,
+          NewExportedSubscriber newExportedSubscriber
   ) {
-    return new ExportToFileStep(
-            source,
-            flattenCardHashes,
-            chunkWriter,
-            readChunkSize,
-            corePoolSize
+    return new PagedDatabaseExportStep(
+            rxScheduler,
+            pagedCardReader,
+            acquirerFileSubscriber::apply,
+            newExportedSubscriber::apply
     );
   }
 
@@ -71,23 +74,27 @@ public class ExportJobModule {
   }
 
   @Bean
+  AcquirerFileSubscriber acquirerFileSubscriber(
+          Scheduler rxScheduler,
+          Function<CardEntity, List<String>> flattenCardHashes,
+          ChunkWriter<String> chunkBufferedWriter
+  ) {
+    return new AcquirerFileSubscriber(flattenCardHashes, chunkBufferedWriter, rxScheduler, readChunkSize);
+  }
+
+  @Bean
+  NewExportedSubscriber newExportedSubscriber(
+          Scheduler rxScheduler
+  ) {
+    return new NewExportedSubscriber(rxScheduler, new MemoryExportedInstrumentRepository());
+  }
+
+  @Bean
   Function<CardEntity, List<String>> flattenCardHashes() {
     return cardEntity -> Stream.concat(
             Stream.of(cardEntity.getHashPan()),
             cardEntity.getHashPanChildren().stream()
     ).toList();
-  }
-
-  @Bean
-  Flowable<List<CardEntity>> batchCardReader(PagedCardReader cardReader) {
-    return Flowable.<List<CardEntity>>generate(emitter -> {
-      final var batch = cardReader.read();
-      if (Objects.nonNull(batch) && !batch.isEmpty()) {
-        emitter.onNext(batch);
-      } else {
-        emitter.onComplete();
-      }
-    }).onBackpressureBuffer().doFinally(cardReader::reset);
   }
 
   @Bean
@@ -99,7 +106,7 @@ public class ExportJobModule {
   public PagedCardReader cardReader(MongoTemplate mongoTemplate) {
     final var query = new Query();
     query.fields().include("hashPan", "hashPanChildren", "par", "exportConfirmed");
-    query.addCriteria(Criteria.where("state").is("READY"));
+    query.addCriteria(Criteria.where("state").is("NOT_ENROLLED"));
     return new MongoPagedCardReaderBuilder()
             .setMongoTemplate(mongoTemplate)
             .setCollectionName(COLLECTION_NAME)
@@ -108,5 +115,10 @@ public class ExportJobModule {
             .setSortDirection(Sort.Direction.ASC)
             .setPageSize(readChunkSize)
             .build();
+  }
+
+  @Bean
+  Scheduler rxScheduler() {
+    return Schedulers.from(Executors.newFixedThreadPool(corePoolSize));
   }
 }

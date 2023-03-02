@@ -1,4 +1,4 @@
-package it.pagopa.gov.rtdmsexporter.infrastructure;
+package it.pagopa.gov.rtdmsexporter.infrastructure.blob;
 
 public record BlobConfig(
         String baseUrl,

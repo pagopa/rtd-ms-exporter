@@ -1,6 +1,6 @@
-package it.pagopa.gov.rtdmsexporter.infrastructure.step;
+package it.pagopa.gov.rtdmsexporter.application.acquirer;
 
-import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
+import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.utils.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

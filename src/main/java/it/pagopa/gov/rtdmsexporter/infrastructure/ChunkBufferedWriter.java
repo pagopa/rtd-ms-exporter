@@ -1,7 +1,7 @@
 package it.pagopa.gov.rtdmsexporter.infrastructure;
 
 import io.vavr.control.Try;
-import it.pagopa.gov.rtdmsexporter.domain.ChunkWriter;
+import it.pagopa.gov.rtdmsexporter.domain.acquirer.ChunkWriter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedWriter;

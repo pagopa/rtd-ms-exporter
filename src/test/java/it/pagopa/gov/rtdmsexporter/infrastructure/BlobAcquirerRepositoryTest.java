@@ -1,6 +1,8 @@
 package it.pagopa.gov.rtdmsexporter.infrastructure;
 
-import it.pagopa.gov.rtdmsexporter.domain.AcquirerFile;
+import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFile;
+import it.pagopa.gov.rtdmsexporter.infrastructure.blob.BlobAcquirerRepository;
+import it.pagopa.gov.rtdmsexporter.infrastructure.blob.BlobConfig;
 import it.pagopa.gov.rtdmsexporter.utils.FileUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;

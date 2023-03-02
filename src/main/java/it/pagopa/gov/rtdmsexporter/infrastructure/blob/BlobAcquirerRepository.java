@@ -1,7 +1,7 @@
-package it.pagopa.gov.rtdmsexporter.infrastructure;
+package it.pagopa.gov.rtdmsexporter.infrastructure.blob;
 
-import it.pagopa.gov.rtdmsexporter.domain.AcquirerFile;
-import it.pagopa.gov.rtdmsexporter.domain.AcquirerFileRepository;
+import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFile;
+import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFileRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
