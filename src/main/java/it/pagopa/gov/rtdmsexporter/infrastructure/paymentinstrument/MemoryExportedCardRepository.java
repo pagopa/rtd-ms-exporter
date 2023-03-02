@@ -4,14 +4,15 @@ import it.pagopa.gov.rtdmsexporter.domain.paymentinstrument.ExportedCardReposito
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-public class MemoryExportedInstrumentRepository implements ExportedCardRepository {
+public class MemoryExportedCardRepository implements ExportedCardRepository {
 
   private final Set<String> exportedInstruments;
 
-  public MemoryExportedInstrumentRepository() {
-    exportedInstruments = new HashSet<>();
+  public MemoryExportedCardRepository() {
+    exportedInstruments = ConcurrentHashMap.newKeySet();
   }
 
   @Override

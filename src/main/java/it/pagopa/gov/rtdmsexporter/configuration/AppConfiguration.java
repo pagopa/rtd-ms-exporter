@@ -3,11 +3,14 @@ package it.pagopa.gov.rtdmsexporter.configuration;
 import it.pagopa.gov.rtdmsexporter.application.ExportJob;
 import it.pagopa.gov.rtdmsexporter.application.ExportJobService;
 import it.pagopa.gov.rtdmsexporter.application.PagedDatabaseExportStep;
+import it.pagopa.gov.rtdmsexporter.application.paymentinstrument.NewExportedNotifyStep;
 import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFileRepository;
+import it.pagopa.gov.rtdmsexporter.domain.paymentinstrument.ExportedCardRepository;
 import it.pagopa.gov.rtdmsexporter.infrastructure.blob.BlobAcquirerRepository;
 import it.pagopa.gov.rtdmsexporter.infrastructure.blob.BlobConfig;
 import it.pagopa.gov.rtdmsexporter.application.acquirer.SaveAcquirerFileStep;
 import it.pagopa.gov.rtdmsexporter.application.acquirer.ZipStep;
+import it.pagopa.gov.rtdmsexporter.infrastructure.paymentinstrument.MemoryExportedCardRepository;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
@@ -33,9 +36,10 @@ public class AppConfiguration {
   ExportJobService exportJobService(
           PagedDatabaseExportStep exportDatabaseStep,
           ZipStep zipStep,
-          SaveAcquirerFileStep saveAcquirerFileStep
+          SaveAcquirerFileStep saveAcquirerFileStep,
+          NewExportedNotifyStep exportedNotifyStep
   ) {
-    return new ExportJobService(new ExportJob(exportDatabaseStep, zipStep, saveAcquirerFileStep));
+    return new ExportJobService(new ExportJob(exportDatabaseStep, zipStep, saveAcquirerFileStep, exportedNotifyStep));
   }
 
   @Bean
@@ -51,6 +55,11 @@ public class AppConfiguration {
             filename,
             httpClient
     );
+  }
+
+  @Bean
+  public ExportedCardRepository exportedCardRepository() {
+    return new MemoryExportedCardRepository();
   }
 
   @Bean
