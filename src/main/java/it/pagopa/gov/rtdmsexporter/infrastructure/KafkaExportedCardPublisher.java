@@ -7,6 +7,7 @@ import org.springframework.messaging.support.MessageBuilder;
 
 public class KafkaExportedCardPublisher implements ExportedCardPublisher {
 
+  public static final String EVENT_TYPE = "confirmExport";
   private final String outputBindingName;
   private final StreamBridge streamBridge;
 
@@ -17,7 +18,7 @@ public class KafkaExportedCardPublisher implements ExportedCardPublisher {
 
   @Override
   public Try<String> notifyExportedCard(String cardId) {
-    final var event = new SimpleCloudEventDto<>("confirmExport", new ExportCardEventDto(cardId));
+    final var event = new SimpleCloudEventDto<>(EVENT_TYPE, new ExportCardEventDto(cardId));
     final var message = MessageBuilder.withPayload(event).setHeader("partitionKey", cardId).build();
     return Try.of(() -> streamBridge.send(outputBindingName, message))
             .flatMap(isPublish -> isPublish ? Try.success(cardId) : Try.failure(new RuntimeException("Failed to send export event")));
