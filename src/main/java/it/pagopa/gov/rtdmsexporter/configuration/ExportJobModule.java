@@ -6,14 +6,17 @@ import it.pagopa.gov.rtdmsexporter.application.PagedDatabaseExportStep;
 import it.pagopa.gov.rtdmsexporter.application.acquirer.AcquirerFileSubscriber;
 import it.pagopa.gov.rtdmsexporter.application.acquirer.SaveAcquirerFileStep;
 import it.pagopa.gov.rtdmsexporter.application.acquirer.ZipStep;
+import it.pagopa.gov.rtdmsexporter.application.paymentinstrument.NewExportedNotifyStep;
 import it.pagopa.gov.rtdmsexporter.application.paymentinstrument.NewExportedSubscriber;
 import it.pagopa.gov.rtdmsexporter.domain.PagedCardReader;
 import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.domain.acquirer.ChunkWriter;
+import it.pagopa.gov.rtdmsexporter.domain.paymentinstrument.DummyExportedCardPublisher;
+import it.pagopa.gov.rtdmsexporter.domain.paymentinstrument.ExportedCardRepository;
 import it.pagopa.gov.rtdmsexporter.infrastructure.ChunkBufferedWriter;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.MongoPagedCardReaderBuilder;
-import it.pagopa.gov.rtdmsexporter.infrastructure.paymentinstrument.MemoryExportedInstrumentRepository;
+import it.pagopa.gov.rtdmsexporter.infrastructure.paymentinstrument.MemoryExportedCardRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,6 +77,11 @@ public class ExportJobModule {
   }
 
   @Bean
+  NewExportedNotifyStep newExportedNotifyStep(ExportedCardRepository exportedCardRepository) {
+    return new NewExportedNotifyStep(exportedCardRepository, new DummyExportedCardPublisher());
+  }
+
+  @Bean
   AcquirerFileSubscriber acquirerFileSubscriber(
           Scheduler rxScheduler,
           Function<CardEntity, List<String>> flattenCardHashes,
@@ -86,7 +94,7 @@ public class ExportJobModule {
   NewExportedSubscriber newExportedSubscriber(
           Scheduler rxScheduler
   ) {
-    return new NewExportedSubscriber(rxScheduler, new MemoryExportedInstrumentRepository());
+    return new NewExportedSubscriber(rxScheduler, new MemoryExportedCardRepository());
   }
 
   @Bean

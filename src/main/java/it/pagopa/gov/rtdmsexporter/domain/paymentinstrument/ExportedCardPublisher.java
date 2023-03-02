@@ -1,5 +1,7 @@
 package it.pagopa.gov.rtdmsexporter.domain.paymentinstrument;
 
+import io.vavr.control.Try;
+
 public interface ExportedCardPublisher {
-  void notifyExportedCard(String cardId);
+  Try<String> notifyExportedCard(String cardId);
 }
