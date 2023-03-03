@@ -114,3 +114,16 @@ graalvmNative {
         }
     }
 }
+
+// disable processAot until https://github.com/spring-cloud/spring-cloud-stream/issues/2655 was fix
+tasks.named("processAot") {
+    configure {
+        enabled = false
+    }
+}
+
+tasks.named("processTestAot") {
+    configure {
+        enabled = false
+    }
+}
