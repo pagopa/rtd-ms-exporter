@@ -1,17 +1,20 @@
 package it.pagopa.gov.rtdmsexporter.application.acquirer;
 
 import io.reactivex.rxjava3.core.Flowable;
-import it.pagopa.gov.rtdmsexporter.configuration.AppConfiguration;
-import it.pagopa.gov.rtdmsexporter.configuration.ExportJobModule;
-import it.pagopa.gov.rtdmsexporter.configuration.MockMongoConfiguration;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import it.pagopa.gov.rtdmsexporter.configuration.AcquirerModule;
+import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import it.pagopa.gov.rtdmsexporter.utils.HashStream;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.TestPropertySource;
@@ -25,22 +28,18 @@ import java.time.Duration;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static it.pagopa.gov.rtdmsexporter.configuration.ExportJobModule.ACQUIRER_GENERATED_FILE;
+import static it.pagopa.gov.rtdmsexporter.configuration.AcquirerModule.ACQUIRER_GENERATED_FILE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
-@ContextConfiguration(classes = {ExportJobModule.class, MockMongoConfiguration.class, AppConfiguration.class})
+@ContextConfiguration(classes = { AcquirerFileSubscriberTest.MockDeps.class, AcquirerModule.class })
 @TestExecutionListeners({DependencyInjectionTestExecutionListener.class})
 @TestPropertySource(locations = "classpath:application.yml")
 class AcquirerFileSubscriberTest {
 
   @Autowired
   private AcquirerFileSubscriber acquirerFileSubscriber;
-
-  @BeforeEach
-  void setup() {
-  }
 
   @AfterEach
   public void cleanUp() throws IOException {
@@ -69,4 +68,16 @@ class AcquirerFileSubscriberTest {
     assertThat(Files.readAllLines(Path.of(ACQUIRER_GENERATED_FILE))).isEmpty();
   }
 
+  @TestConfiguration
+  static class MockDeps {
+    @MockBean
+    SaveAcquirerFileStep saveAcquirerFileStep;
+    @MockBean
+    AcquirerFileRepository acquirerFileRepository;
+
+    @Bean
+    Scheduler rxScheduler() {
+      return Schedulers.io();
+    }
+  }
 }

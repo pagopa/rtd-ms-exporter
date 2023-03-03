@@ -8,8 +8,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
@@ -25,7 +26,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
-@Import(SaveAcquirerFileTaskletTest.Config.class)
+@ContextConfiguration(classes = { SaveAcquirerFileTaskletTest.Config.class })
 @TestExecutionListeners({ DependencyInjectionTestExecutionListener.class })
 class SaveAcquirerFileTaskletTest {
 
@@ -69,11 +70,10 @@ class SaveAcquirerFileTaskletTest {
     verify(acquirerFileRepository, times(1)).save(any());
   }
 
+  @TestConfiguration
   static class Config {
-    @Bean
-    AcquirerFileRepository acquirerFileRepository() {
-      return mock(AcquirerFileRepository.class);
-    }
+    @MockBean
+    AcquirerFileRepository acquirerFileRepository;
   }
 
 }

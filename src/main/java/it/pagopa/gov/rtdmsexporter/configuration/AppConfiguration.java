@@ -1,16 +1,13 @@
 package it.pagopa.gov.rtdmsexporter.configuration;
 
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import it.pagopa.gov.rtdmsexporter.application.ExportJob;
 import it.pagopa.gov.rtdmsexporter.application.ExportJobService;
 import it.pagopa.gov.rtdmsexporter.application.PagedDatabaseExportStep;
-import it.pagopa.gov.rtdmsexporter.application.paymentinstrument.NewExportedNotifyStep;
-import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFileRepository;
-import it.pagopa.gov.rtdmsexporter.domain.paymentinstrument.ExportedCardRepository;
-import it.pagopa.gov.rtdmsexporter.infrastructure.blob.BlobAcquirerRepository;
-import it.pagopa.gov.rtdmsexporter.infrastructure.blob.BlobConfig;
 import it.pagopa.gov.rtdmsexporter.application.acquirer.SaveAcquirerFileStep;
 import it.pagopa.gov.rtdmsexporter.application.acquirer.ZipStep;
-import it.pagopa.gov.rtdmsexporter.infrastructure.paymentinstrument.MemoryExportedCardRepository;
+import it.pagopa.gov.rtdmsexporter.application.paymentinstrument.NewExportedNotifyStep;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
@@ -28,9 +25,18 @@ import org.springframework.context.annotation.Configuration;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.Executors;
 
 @Configuration
 public class AppConfiguration {
+
+  private final int corePoolSize;
+
+  public AppConfiguration(
+          @Value("${exporter.corePoolSize:4}") int corePoolSize
+  ) {
+    this.corePoolSize = corePoolSize;
+  }
 
   @Bean
   ExportJobService exportJobService(
@@ -43,23 +49,8 @@ public class AppConfiguration {
   }
 
   @Bean
-  public AcquirerFileRepository acquirerFileRepository(
-          @Value("${blobstorage.api.baseUrl}") String baseUrl,
-          @Value("${blobstorage.api.apiKey}") String apiKey,
-          @Value("${blobstorage.api.containerName}") String containerName,
-          @Value("${blobstorage.api.filename}") String filename,
-          CloseableHttpClient httpClient
-  ) {
-    return new BlobAcquirerRepository(
-            BlobConfig.of(baseUrl, apiKey, containerName),
-            filename,
-            httpClient
-    );
-  }
-
-  @Bean
-  public ExportedCardRepository exportedCardRepository() {
-    return new MemoryExportedCardRepository();
+  Scheduler rxScheduler() {
+    return Schedulers.from(Executors.newFixedThreadPool(corePoolSize));
   }
 
   @Bean

@@ -1,6 +1,5 @@
 package it.pagopa.gov.rtdmsexporter.application.acquirer;
 
-import it.pagopa.gov.rtdmsexporter.application.acquirer.ZipStep;
 import it.pagopa.gov.rtdmsexporter.infrastructure.ZipUtils;
 import it.pagopa.gov.rtdmsexporter.utils.FileUtils;
 import it.pagopa.gov.rtdmsexporter.utils.HashStream;

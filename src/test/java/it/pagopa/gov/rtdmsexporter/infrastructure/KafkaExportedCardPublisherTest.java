@@ -1,6 +1,7 @@
 package it.pagopa.gov.rtdmsexporter.infrastructure;
 
-import it.pagopa.gov.rtdmsexporter.configuration.KafkaConfiguration;
+import it.pagopa.gov.rtdmsexporter.application.paymentinstrument.NewExportedSubscriber;
+import it.pagopa.gov.rtdmsexporter.configuration.NewExportedModule;
 import it.pagopa.gov.rtdmsexporter.domain.paymentinstrument.ExportedCardPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -24,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 @ActiveProfiles("integration")
-@SpringBootTest(classes = KafkaConfiguration.class)
+@SpringBootTest(classes = { NewExportedModule.class, KafkaExportedCardPublisherTest.MockDeps.class })
 @EnableAutoConfiguration
 @Testcontainers
 @ExtendWith(SpringExtension.class)
@@ -69,5 +72,11 @@ class KafkaExportedCardPublisherTest {
   void whenPublishFailThenReturnFailure() {
     kafkaContainer.stop();
     assertThat(exportedCardPublisher.notifyExportedCard("123")).isEmpty();
+  }
+
+  @TestConfiguration
+  static class MockDeps {
+    @MockBean
+    NewExportedSubscriber newExportedSubscriber;
   }
 }

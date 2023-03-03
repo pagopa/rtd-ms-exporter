@@ -1,11 +1,11 @@
 package it.pagopa.gov.rtdmsexporter.application;
 
 import com.mongodb.MongoException;
-import it.pagopa.gov.rtdmsexporter.configuration.AppConfiguration;
-import it.pagopa.gov.rtdmsexporter.configuration.ExportJobModule;
-import it.pagopa.gov.rtdmsexporter.configuration.MockMongoConfiguration;
+import io.vavr.control.Try;
+import it.pagopa.gov.rtdmsexporter.configuration.*;
 import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFile;
 import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFileRepository;
+import it.pagopa.gov.rtdmsexporter.domain.paymentinstrument.ExportedCardPublisher;
 import it.pagopa.gov.rtdmsexporter.infrastructure.ZipUtils;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import it.pagopa.gov.rtdmsexporter.utils.HashStream;
@@ -17,7 +17,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -39,8 +40,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
-@Import(ExportJobTest.Config.class)
-@ContextConfiguration(classes = { MockMongoConfiguration.class, ExportJobModule.class, AppConfiguration.class })
+@ContextConfiguration(classes = { ExportJobTest.Config.class, DatabaseReaderModule.class, AcquirerModule.class, NewExportedModule.class, AppConfiguration.class })
 @TestExecutionListeners({ DependencyInjectionTestExecutionListener.class })
 @TestPropertySource(locations = "classpath:application.yml")
 class ExportJobTest {
@@ -49,13 +49,17 @@ class ExportJobTest {
   private static final String TEST_ZIP_ACQUIRER_FILE = "output.zip";
 
   @Autowired
+  private ExportJobService exportJobService;
+
+  // downstream deps
+  @Autowired
   private MongoTemplate mongoTemplate;
 
   @Autowired
   private AcquirerFileRepository acquirerFileRepository;
 
   @Autowired
-  private ExportJobService exportJobService;
+  private ExportedCardPublisher exportedCardPublisher;
 
   @BeforeEach
   void setup() {
@@ -76,8 +80,10 @@ class ExportJobTest {
   void whenCardAvailableThenCompleteJob() throws Exception {
     final var captor = ArgumentCaptor.forClass(AcquirerFile.class);
     when(acquirerFileRepository.save(any())).thenReturn(true);
+    when(exportedCardPublisher.notifyExportedCard(any())).thenReturn(Try.success(""));
     assertThat(exportJobService.execute()).contains(true);
     verify(acquirerFileRepository, times(1)).save(captor.capture());
+    verify(exportedCardPublisher, times(20)).notifyExportedCard(any());
     assertThat(captor.getValue().file().getPath()).contains(".zip");
   }
 
@@ -86,6 +92,7 @@ class ExportJobTest {
     when(mongoTemplate.find(any(Query.class), eq(CardEntity.class), anyString())).thenThrow(new MongoException("Error"));
     assertThat(exportJobService.execute()).isEmpty();
     verify(acquirerFileRepository, times(0)).save(any());
+    verify(exportedCardPublisher, times(0)).notifyExportedCard(any());
   }
 
   @Test
@@ -104,11 +111,16 @@ class ExportJobTest {
   }
 
   @TestConfiguration
+  @Import(DatabaseMockConfiguration.class)
   static class Config {
-    @Bean
-    AcquirerFileRepository acquirerFileRepository() {
-      return mock(AcquirerFileRepository.class);
-    }
+    @MockBean
+    AcquirerFileRepository acquirerFileRepository;
+
+    @MockBean
+    ExportedCardPublisher exportedCardPublisher;
+
+    @MockBean
+    StreamBridge streamBridge;
   }
 }
 

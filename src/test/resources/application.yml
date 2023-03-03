@@ -6,3 +6,9 @@ exporter:
   readChunkSize: 10
   corePoolSize: 4
   performanceMonitor: true
+
+blobstorage.api:
+  baseUrl: "baseUrl"
+  containerName: "containerName"
+  apiKey: "apiKey"
+  filename: "hashedPans.zip"
