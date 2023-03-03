@@ -19,13 +19,19 @@ public class NewExportedNotifyStep {
   }
 
   public boolean execute() {
-    Flowable.fromStream(exportedCardRepository.exportedPaymentInstruments())
+    final var successes = Flowable.fromStream(exportedCardRepository.exportedPaymentInstruments())
             .observeOn(Schedulers.single())
             .map(exportedCardPublisher::notifyExportedCard)
-            .doOnEach(item -> log.info("Send export event {}", item))
+            .doOnNext(this::logIfError)
             .filter(Try::isSuccess)
             .doOnNext(item -> exportedCardRepository.remove(item.get()))
-            .blockingSubscribe();
+            .count()
+            .blockingGet();
+    log.info("Successfully published {} events", successes);
     return true;
+  }
+
+  private void logIfError(Try<?> result) {
+    result.onFailure(it -> log.error("Failed to publish event", it));
   }
 }
