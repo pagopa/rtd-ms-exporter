@@ -21,7 +21,7 @@ public class KafkaExportedCardPublisher implements ExportedCardPublisher {
     final var event = new SimpleCloudEventDto<>(EVENT_TYPE, new ExportCardEventDto(cardId));
     final var message = MessageBuilder.withPayload(event).setHeader("partitionKey", cardId).build();
     return Try.of(() -> streamBridge.send(outputBindingName, message))
-            .flatMap(isPublish -> isPublish ? Try.success(cardId) : Try.failure(new RuntimeException("Failed to send export event")));
+            .flatMap(isPublish -> Boolean.TRUE.equals(isPublish) ? Try.success(cardId) : Try.failure(new RuntimeException("Failed to send export event")));
   }
 
   record SimpleCloudEventDto<T>(

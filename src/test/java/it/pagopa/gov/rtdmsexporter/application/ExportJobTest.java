@@ -6,6 +6,7 @@ import it.pagopa.gov.rtdmsexporter.configuration.*;
 import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFile;
 import it.pagopa.gov.rtdmsexporter.domain.acquirer.AcquirerFileRepository;
 import it.pagopa.gov.rtdmsexporter.domain.paymentinstrument.ExportedCardPublisher;
+import it.pagopa.gov.rtdmsexporter.domain.paymentinstrument.ExportedCardRepository;
 import it.pagopa.gov.rtdmsexporter.infrastructure.ZipUtils;
 import it.pagopa.gov.rtdmsexporter.infrastructure.mongo.CardEntity;
 import it.pagopa.gov.rtdmsexporter.utils.HashStream;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.AdditionalAnswers;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,12 +63,18 @@ class ExportJobTest {
   @Autowired
   private ExportedCardPublisher exportedCardPublisher;
 
+  @Autowired
+  private ExportedCardRepository exportedCardRepository;
+
   @BeforeEach
   void setup() {
     final var cards = HashStream.of(20)
             .map(it -> new CardEntity(it, HashStream.of(2, it).collect(Collectors.toList()), "", false))
             .collect(Collectors.toList());
     when(mongoTemplate.find(any(Query.class), eq(CardEntity.class), anyString())).thenReturn(cards);
+    when(exportedCardPublisher.notifyExportedCard(any())).thenAnswer(
+            AdditionalAnswers.returnsElementsOf(cards.stream().map(CardEntity::getHashPan).map(Try::success).toList())
+    );
   }
 
   @AfterEach
@@ -80,11 +88,11 @@ class ExportJobTest {
   void whenCardAvailableThenCompleteJob() throws Exception {
     final var captor = ArgumentCaptor.forClass(AcquirerFile.class);
     when(acquirerFileRepository.save(any())).thenReturn(true);
-    when(exportedCardPublisher.notifyExportedCard(any())).thenReturn(Try.success(""));
     assertThat(exportJobService.execute()).contains(true);
     verify(acquirerFileRepository, times(1)).save(captor.capture());
     verify(exportedCardPublisher, times(20)).notifyExportedCard(any());
     assertThat(captor.getValue().file().getPath()).contains(".zip");
+    assertThat(exportedCardRepository.exportedPaymentInstruments()).isEmpty();
   }
 
   @Test
@@ -102,6 +110,14 @@ class ExportJobTest {
       assertThat(exportJobService.execute()).contains(false);
       verify(acquirerFileRepository, times(0)).save(any());
     }
+  }
+
+  @Test
+  void whenUploadFailThenSkipPublish() throws Exception {
+    when(acquirerFileRepository.save(any())).thenReturn(false);
+    assertThat(exportJobService.execute()).contains(false);
+    verify(exportedCardPublisher, times(0)).notifyExportedCard(any());
+    assertThat(exportedCardRepository.exportedPaymentInstruments()).isNotEmpty();
   }
 
   @Test

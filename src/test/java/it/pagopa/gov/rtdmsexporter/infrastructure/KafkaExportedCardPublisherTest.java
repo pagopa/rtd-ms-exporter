@@ -64,7 +64,7 @@ class KafkaExportedCardPublisherTest {
               kafkaContainer.getBootstrapServers(),
               "group", "rtd-split-by-pi", 0,
               true, true, Duration.ofSeconds(5));
-      assertThat(record.value().toString()).isEqualTo(expectedEvent);
+      assertThat(record.value().toString()).hasToString(expectedEvent);
     });
   }
 
