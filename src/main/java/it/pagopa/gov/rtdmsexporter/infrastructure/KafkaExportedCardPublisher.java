@@ -7,7 +7,7 @@ import org.springframework.messaging.support.MessageBuilder;
 
 public class KafkaExportedCardPublisher implements ExportedCardPublisher {
 
-  public static final String EVENT_TYPE = "confirmExport";
+  public static final String EVENT_TYPE = "ConfirmExport";
   private final String outputBindingName;
   private final StreamBridge streamBridge;
 
