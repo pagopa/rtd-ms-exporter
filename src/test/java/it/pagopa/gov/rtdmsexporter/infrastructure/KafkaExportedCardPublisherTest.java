@@ -56,7 +56,7 @@ class KafkaExportedCardPublisherTest {
 
   @Test
   void whenNotifyExportedThenPublishValidCloudEvent() {
-    final var expectedEvent = "{\"type\":\"confirmExport\",\"data\":{\"paymentInstrumentId\":\"123\"}}";
+    final var expectedEvent = "{\"type\":\"ConfirmExport\",\"data\":{\"paymentInstrumentId\":\"123\"}}";
     assertThat(exportedCardPublisher.notifyExportedCard("123")).contains("123");
 
     await().atMost(Duration.ofSeconds(5)).untilAsserted(() -> {
