@@ -45,7 +45,7 @@ public class DatabaseReaderModule {
   @Bean
   PagedCardReader cardReader(MongoTemplate mongoTemplate) {
     final var query = new Query();
-    query.fields().include("hashPan", "hashPanChildren", "par", "exportConfirmed");
+    query.fields().include("hashPan", "hashPanChildren", "par", "exported");
     query.addCriteria(Criteria.where("state").is("READY"));
     return new MongoPagedCardReaderBuilder()
             .setMongoTemplate(mongoTemplate)
