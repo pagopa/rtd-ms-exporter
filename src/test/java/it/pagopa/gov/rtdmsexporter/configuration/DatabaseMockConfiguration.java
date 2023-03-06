@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 @TestConfiguration
-public class MockMongoConfiguration {
+public class DatabaseMockConfiguration {
   @Bean
   MongoTemplate mongoTemplate() {
     return Mockito.mock(MongoTemplate.class);

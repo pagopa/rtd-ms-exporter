@@ -49,6 +49,7 @@ microservice-chart:
     MONGODB_CONNECTION_URI: mongo-db-connection-uri
     APPLICATIONINSIGHTS_CONNECTION_STRING: appinsights-instrumentation-key
     API_BLOB_SUBSCRIPTION_KEY: rtd-internal-api-product-subscription-key
+    KAFKA_RTD_SPLIT_SASL_JAAS_CONFIG: evh-rtd-split-by-pi-rtd-split-by-pi-producer-policy-rtd
 
   envConfig:
     CORE_POOL_SIZE: "4"
@@ -64,3 +65,7 @@ microservice-chart:
       READ_CHUNK_SIZE: READ_CHUNK_SIZE
       API_BLOB_BASE_URL: API_BLOB_BASE_URL
       API_BLOB_CARD_FILENAME: API_BLOB_CARD_FILENAME
+    rtd-split-by-pi-producer:
+      KAFKA_RTD_SPLIT_TOPIC: KAFKA_RTD_SPLIT_TOPIC
+      KAFKA_RTD_SPLIT_BROKER: KAFKA_RTD_SPLIT_BROKER
+      KAFKA_RTD_SPLIT_PARTITION_COUNT: KAFKA_RTD_SPLIT_PARTITION_COUNT
