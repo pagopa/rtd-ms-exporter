@@ -1,6 +1,8 @@
+import java.util.function.Predicate
+
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.0.2'
+    id 'org.springframework.boot' version '3.0.3'
     id 'io.spring.dependency-management' version '1.1.0'
     id 'org.graalvm.buildtools.native' version '0.9.18'
     id 'jacoco'
@@ -8,8 +10,13 @@ plugins {
 }
 
 group = 'it.pagopa.gov'
-version = '0.0.1-SNAPSHOT'
+version = '1.0.0'
 sourceCompatibility = '17'
+
+ext {
+    set('testcontainersVersion', "1.17.6")
+    set('springCloudVersion', "2022.0.1")
+}
 
 configurations {
     compileOnly {
@@ -22,39 +29,101 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-batch'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'com.h2database:h2:2.1.214'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.cloud:spring-cloud-stream'
+    implementation 'org.springframework.cloud:spring-cloud-stream-binder-kafka'
+    implementation 'org.springframework.kafka:spring-kafka'
+
+    implementation 'org.apache.httpcomponents:httpclient:4.5.14'
+    // fp library -> docs: https://docs.vavr.io/#_introduction
+    implementation 'io.vavr:vavr:0.10.4'
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.6'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation 'org.mockito:mockito-inline:5.1.1'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.batch:spring-batch-test'
+    testImplementation 'org.springframework.cloud:spring-cloud-stream-test-binder'
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+    // test containers
+    testImplementation "org.testcontainers:testcontainers"
+    testImplementation "org.testcontainers:junit-jupiter"
+    testImplementation "org.testcontainers:mongodb"
+    testImplementation "org.testcontainers:kafka"
+    testImplementation 'org.awaitility:awaitility:4.2.0'
 }
 
-graalvmNative {
-    binaries {
-        main {
-            useFatJar = true
-        }
+dependencyManagement {
+    imports {
+        mavenBom "org.testcontainers:testcontainers-bom:${testcontainersVersion}"
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+    reports {
+        xml.required = true
+        xml.destination file("${buildDir}/reports/jacoco.xml")
     }
 }
 
 sonarqube {
     properties {
-        property "sonar.exclusions", "**/*Generated.java"
+        property "sonar.exclusions", "**/it.pagopa.gov.rtdmsexporter.ports.rest/**"
     }
 }
 
 test {
+    useJUnitPlatform()
     finalizedBy jacocoTestReport
 }
 
-jacocoTestReport {
-    dependsOn test
+task testWithAgent(type: Test) {
+    // GRAALVM_HOME must be set
+    useJUnitPlatform()
+    finalizedBy(metadataCopy)
 }
 
+graalvmNative {
+    // Agent useful to get working with external libraries.
+    // It allows to get additional reflection metadata, by default is run with test task
+    // the metadata must be copied to META-INF/native-image as resource
+    agent {
+        defaultMode = "standard"
+        enabled = true
+        metadataCopy {
+            inputTaskNames.add("testWithAgent")
+            outputDirectories.add("src/main/resources/META-INF/native-image")
+            mergeWithExisting = true
+        }
+        //callerFilterFiles.from("src/main/resources/native-filter/access-filter.json")
+        tasksToInstrumentPredicate = { t -> (t.name == "testWithAgent") } as Predicate<Task>
+    }
 
-tasks.named('test') {
-    useJUnitPlatform()
+    binaries {
+        main {
+            useFatJar = true
+            javaLauncher = javaToolchains.launcherFor {
+                languageVersion = JavaLanguageVersion.of(17)
+                vendor = JvmVendorSpec.matching("GraalVM Community")
+            }
+        }
+    }
+}
+
+// disable processAot until https://github.com/spring-cloud/spring-cloud-stream/issues/2655 was fix
+tasks.named("processAot") {
+    configure {
+        enabled = false
+    }
+}
+
+tasks.named("processTestAot") {
+    configure {
+        enabled = false
+    }
 }

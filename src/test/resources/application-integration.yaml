@@ -1,0 +1,19 @@
+spring:
+  cloud:
+    stream:
+      function.autodetect: false
+      binders:
+        kafka-split-by-pi-binder:
+          type: kafka
+          environment.spring.cloud.stream.kafka:
+            brokers: ${test.broker}
+            requiredAcks: all
+
+      bindings:
+        exporterToPim-out-0:
+          destination: rtd-split-by-pi
+          content-type: application/json
+          binder: kafka-split-by-pi-binder
+          producer:
+            partitionKeyExpression: headers.partitionKey
+            partitionCount: ${test.partitionCount}

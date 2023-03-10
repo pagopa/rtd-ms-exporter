@@ -46,33 +46,31 @@ steps:
   #      retryCount: '2'
 
   # options: '-B -s $(settingsxml.secureFilePath) -Dmaven.test.failure.ignore=true'
+
   - task: Gradle@3
+    displayName: 'Jacoco test report'
     inputs:
       gradleWrapperFile: 'gradlew'
-      tasks: 'jacocoTestReport jacocoTestCoverageVerification'
+      tasks: 'clean build jacocoTestReport'
       publishJUnitResults: true
-      testResultsFiles: '**/test-results/TEST-*.xml'
+      testResultsFiles: '**/TEST-*.xml'
       javaHomeOption: 'JDKVersion'
       jdkVersionOption: '1.17'
-      effectivePomSkip: false
       sonarQubeRunAnalysis: false
 
   - bash: xmlReportPaths=$(find "$(pwd)" -path '*jacoco.xml' | sed 's/.*/&/' | tr '\n' ','); echo "##vso[task.setvariable variable=xmlReportPaths]$xmlReportPaths"
     displayName: finding jacoco.xml
 
-  #       options: '-B -s $(settingsxml.secureFilePath) -Dsonar.coverage.jacoco.xmlReportPaths=$(xmlReportPaths)'
-
   - task: Gradle@3
     inputs:
       gradleWrapperFile: 'gradlew'
       tasks: 'sonar'
-      options: '-Dsonar.coverage.jacoco.xmlReportPaths=$(xmlReportPaths)'
+      options: '-Dsonar.coverage.jacoco.xmlReportPaths=$(xmlReportPaths) -Dorg.gradle.jvmargs=-Xmx4096M'
       publishJUnitResults: false
       javaHomeOption: 'JDKVersion'
       jdkVersionOption: '1.17'
       sonarQubeRunAnalysis: true
-      isJacocoCoverageReportXML: false
-      sqGradlePluginVersionChoice: 'latest'
+      sqGradlePluginVersionChoice: 'build' # use gradle specified version
 
   - task: SonarCloudPublish@1
     inputs:

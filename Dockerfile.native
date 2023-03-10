@@ -6,7 +6,7 @@ COPY . .
 
 RUN ./gradlew nativeCompile -Pnative
 
-FROM debian:stable-slim
+FROM ubuntu:lunar-20230128
 
 EXPOSE 8080
 

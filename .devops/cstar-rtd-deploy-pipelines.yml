@@ -6,13 +6,17 @@ parameters:
     displayName: 'Launch gradle and docker build'
     type: boolean
     default: true
+  - name: 'buildNative'
+    displayName: 'Deploy and build native version'
+    type: boolean
+    default: false
 
 trigger:
   branches:
     include:
       - develop
-      - uat
-  #      - main
+#      - uat
+#      - main
   paths:
     include:
       - src/*
@@ -47,14 +51,14 @@ variables:
     containerRegistry: '$(DEV_CONTAINER_REGISTRY_NAME)'
     selfHostedAgentPool: $(DEV_AGENT_POOL)
 
-  ${{ elseif startsWith(variables['Build.SourceBranch'], 'refs/heads/uat') }}:
-    environment: 'UAT'
-    componentTest: false
-    postmanEnvFile: 'rtd_uat.postman_environment.json'
-    dockerRegistryServiceConnection: '$(UAT_CONTAINER_REGISTRY_SERVICE_CONN)'
-    kubernetesServiceConnection: '$(UAT_KUBERNETES_SERVICE_CONN)'
-    containerRegistry: '$(UAT_CONTAINER_REGISTRY_NAME)'
-    selfHostedAgentPool: $(UAT_AGENT_POOL)
+#  ${{ elseif startsWith(variables['Build.SourceBranch'], 'refs/heads/uat') }}:
+#    environment: 'UAT'
+#    componentTest: false
+#    postmanEnvFile: 'rtd_uat.postman_environment.json'
+#    dockerRegistryServiceConnection: '$(UAT_CONTAINER_REGISTRY_SERVICE_CONN)'
+#    kubernetesServiceConnection: '$(UAT_KUBERNETES_SERVICE_CONN)'
+#    containerRegistry: '$(UAT_CONTAINER_REGISTRY_NAME)'
+#    selfHostedAgentPool: $(UAT_AGENT_POOL)
 
   #  ${{ elseif or(startsWith(variables['Build.SourceBranch'], 'refs/heads/main'), eq(parameters.ENV, 'PROD')) }}:
   #    environment: 'PROD'
@@ -65,7 +69,7 @@ variables:
 
   ${{ else }}:
     environment: 'DEV'
-    componentTest: true
+    componentTest: false
     postmanEnvFile: 'rtd_dev.postman_environment.json'
     dockerRegistryServiceConnection: '$(DEV_CONTAINER_REGISTRY_SERVICE_CONN)'
     kubernetesServiceConnection: '$(DEV_KUBERNETES_SERVICE_CONN)'
@@ -82,6 +86,12 @@ stages:
         pool:
           vmImage: $(vmImageNameDefault)
         steps:
+          - task: JavaToolInstaller@0
+            displayName: Install Java
+            inputs:
+              versionSpec: '17'
+              jdkArchitectureOption: 'x64'
+              jdkSourceOption: 'PreInstalled'
           - task: Bash@3
             displayName: Get Project version
             name: getprojectversion
@@ -89,7 +99,7 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                version=$(gradle properties -q | grep "version:" | awk '{print $2}')
+                version=$(./gradlew properties -q | grep "version:" | awk '{print $2}')
                 echo "##vso[task.setvariable variable=outputprojectversion;isOutput=true]$version"
               failOnStderr: true
 
@@ -111,6 +121,10 @@ stages:
               containerRegistry: '$(dockerRegistryServiceConnection)'
               repository: '$(imageRepository)'
               command: 'buildAndPush'
+              ${{ if eq(parameters.buildNative, true) }}:
+                Dockerfile: 'Dockerfile.native'
+              ${{ else }}:
+                Dockerfile: 'Dockerfile'
               tags: |
                 $(Build.BuildId)
                 latest
