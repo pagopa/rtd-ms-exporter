@@ -53,6 +53,7 @@ microservice-chart:
 
   envConfig:
     CORE_POOL_SIZE: "4"
+    APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED: "false"
 
   envConfigMapExternals:
     rtd-exporter:
