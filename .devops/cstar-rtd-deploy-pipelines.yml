@@ -128,7 +128,7 @@ stages:
               tags: |
                 $(Build.BuildId)
                 latest
-                $(project_version)
+                $(projectVersion)
   - stage: 'publish_artifact_helm'
     displayName: 'Publish_artifact_Helm'
     dependsOn: ['build']
