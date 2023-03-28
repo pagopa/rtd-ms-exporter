@@ -2,9 +2,9 @@ import java.util.function.Predicate
 
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.0.3'
+    id 'org.springframework.boot' version '3.0.5'
     id 'io.spring.dependency-management' version '1.1.0'
-    id 'org.graalvm.buildtools.native' version '0.9.18'
+    id 'org.graalvm.buildtools.native' version '0.9.20'
     id 'jacoco'
     id "org.sonarqube" version "3.5.0.2730"
 }
@@ -26,6 +26,8 @@ configurations {
 
 repositories {
     mavenCentral()
+    maven { url 'https://repo.spring.io/milestone' }
+    maven { url 'https://repo.spring.io/snapshot' }
 }
 
 dependencies {
@@ -115,13 +117,7 @@ graalvmNative {
     }
 }
 
-// disable processAot until https://github.com/spring-cloud/spring-cloud-stream/issues/2655 was fix
-tasks.named("processAot") {
-    configure {
-        enabled = false
-    }
-}
-
+// disable process test aot to avoid issue with mockbean https://github.com/spring-projects/spring-boot/issues/32195#issuecomment-1327403502
 tasks.named("processTestAot") {
     configure {
         enabled = false
