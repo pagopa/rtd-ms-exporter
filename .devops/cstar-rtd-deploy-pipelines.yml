@@ -100,14 +100,14 @@ stages:
               targetType: 'inline'
               script: |
                 version=$(./gradlew properties -q | grep "version:" | awk '{print $2}')
-                echo "##vso[task.setvariable variable=outputprojectversion;isOutput=true]$version"
+                echo "##vso[task.setvariable variable=outputProjectVersion;isOutput=true]$version"
               failOnStderr: true
 
   - stage: 'build'
     displayName: 'Build_and_Publish_to_${{ variables.environment }}'
     dependsOn: 'project_version'
     variables:
-      project_version: $[ stageDependencies.Release.ProjectVersion.outputs['getprojectversion.outputprojectversion'] ]
+      projectVersion: $[ stageDependencies.project_version.ProjectVersion.outputs['getprojectversion.outputProjectVersion'] ]
     jobs:
       - job: Build
         displayName: Build
@@ -128,7 +128,7 @@ stages:
               tags: |
                 $(Build.BuildId)
                 latest
-                $(project_version)
+                $(projectVersion)
   - stage: 'publish_artifact_helm'
     displayName: 'Publish_artifact_Helm'
     dependsOn: ['build']
@@ -151,7 +151,7 @@ stages:
     dependsOn: ['publish_artifact_helm']
     condition: and(succeeded(), eq(variables.canDeploy, true))
     variables:
-      project_version: $[ stageDependencies.Release.ProjectVersion.outputs['getprojectversion.outputprojectversion'] ]
+      projectVersion: $[ stageDependencies.project_version.ProjectVersion.outputs['getprojectversion.outputProjectVersion'] ]
     jobs:
       - deployment: 'Deploy_to_${{ variables.environment }}'
         displayName: 'Deploy to ${{ variables.environment }} K8S'
