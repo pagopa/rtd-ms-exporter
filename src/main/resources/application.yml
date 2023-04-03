@@ -52,6 +52,7 @@ spring:
             security.protocol: SASL_SSL
             sasl.mechanism: PLAIN
 
+      default-binder: kafka-split-by-pi-binder
       binders:
         kafka-split-by-pi-binder:
           type: kafka

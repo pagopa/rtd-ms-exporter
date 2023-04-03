@@ -15,7 +15,7 @@ sourceCompatibility = '17'
 
 ext {
     set('testcontainersVersion', "1.17.6")
-    set('springCloudVersion', "2022.0.1")
+    set('springCloudVersion', "2022.0.2")
 }
 
 configurations {
@@ -98,13 +98,14 @@ graalvmNative {
         defaultMode = "standard"
         enabled = true
         metadataCopy {
-            inputTaskNames.add("testWithAgent")
+            inputTaskNames.add("bootRun")
             outputDirectories.add("src/main/resources/META-INF/native-image")
             mergeWithExisting = true
         }
         //callerFilterFiles.from("src/main/resources/native-filter/access-filter.json")
-        tasksToInstrumentPredicate = { t -> (t.name == "testWithAgent") } as Predicate<Task>
+        tasksToInstrumentPredicate = { t -> (t.name == "bootRun") } as Predicate<Task>
     }
+
 
     binaries {
         main {
