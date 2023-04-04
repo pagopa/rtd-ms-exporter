@@ -4,6 +4,7 @@ microservice-chart:
   fullnameOverride: ""
 
   livenessProbe:
+    handlerType: httpGet
     httpGet:
       path: /actuator/health/liveness
       port: 8080
@@ -12,6 +13,7 @@ microservice-chart:
     periodSeconds: 10
 
   readinessProbe:
+    handlerType: httpGet
     httpGet:
       path: /actuator/health/readiness
       port: 8080
@@ -53,6 +55,7 @@ microservice-chart:
 
   envConfig:
     CORE_POOL_SIZE: "4"
+    APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED: "false"
 
   envConfigMapExternals:
     rtd-exporter:
