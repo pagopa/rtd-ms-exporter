@@ -2,7 +2,6 @@ package it.pagopa.gov.rtdmsexporter.configuration;
 
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import it.pagopa.gov.rtdmsexporter.application.ExportJob;
 import it.pagopa.gov.rtdmsexporter.application.ExportJobService;
 import it.pagopa.gov.rtdmsexporter.application.PagedDatabaseExportStep;
 import it.pagopa.gov.rtdmsexporter.application.acquirer.SaveAcquirerFileStep;
@@ -45,7 +44,7 @@ public class AppConfiguration {
           SaveAcquirerFileStep saveAcquirerFileStep,
           NewExportedNotifyStep exportedNotifyStep
   ) {
-    return new ExportJobService(new ExportJob(exportDatabaseStep, zipStep, saveAcquirerFileStep, exportedNotifyStep));
+    return new ExportJobService(exportDatabaseStep, zipStep, saveAcquirerFileStep, exportedNotifyStep);
   }
 
   @Bean
