@@ -42,10 +42,10 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
-@ContextConfiguration(classes = { ExportJobTest.Config.class, DatabaseReaderModule.class, AcquirerModule.class, NewExportedModule.class, AppConfiguration.class })
+@ContextConfiguration(classes = { ExportJobServiceTest.Config.class, DatabaseReaderModule.class, AcquirerModule.class, NewExportedModule.class, AppConfiguration.class })
 @TestExecutionListeners({ DependencyInjectionTestExecutionListener.class })
 @TestPropertySource(locations = "classpath:application.yml")
-class ExportJobTest {
+class ExportJobServiceTest {
 
   private static final String TEST_ACQUIRER_FILE = "output.csv";
   private static final String TEST_ZIP_ACQUIRER_FILE = "output.zip";
